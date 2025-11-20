@@ -13,7 +13,6 @@ public:
     short int getvida();
     void setvida(short int nuevavida);
     void setdefensa(short int cambiodefensa);
-
 };
 
 #endif // INDIO_H

@@ -1,16 +1,11 @@
 #include "carro.h"
 
-//getters.
-float carro:: getaccely(){
-    return accely;
-}
-//setters.
-void carro:: setaccely(float cambioaccely){
-    accely=cambioaccely;
-}
 //constructor.
-carro:: carro(float velx, float vely, float accely){
+carro:: carro(float velx, float vely){
     setvelx(velx);
     setvely(vely);
-    setaccely(accely);
+}
+//metodos.
+void carro:: aceleracion(short int metros, short int segundos){
+    vely=metros*(segundos*segundos); //formula de aceleracion uniforme (ms^2).
 }

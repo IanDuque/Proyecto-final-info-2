@@ -7,14 +7,11 @@ private:
 private:
     float velx;
     float vely;
-    float accely;
 public:
-    //getters.
-    float getaccely();
-    //setters.
-    void setaccely(float cambioaccely);
     //constructor.
-    carro(float velx, float vely, float accely);
+    carro(float velx, float vely);
+    //metodos.
+    void aceleracion(short int metros, short int segundos);
 };
 
 #endif // CARRO_H

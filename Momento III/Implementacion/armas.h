@@ -14,6 +14,8 @@ public:
     void setvelataq(short int nuevavelataq);
     //constructor.
     armas(short int danio, short int velataq);
+    //metodos.
+    void tiroparabolico(short int velocidadx, short int velocidady, short int gravedad, short int tiempo);
 };
 
 #endif // ARMAS_H
