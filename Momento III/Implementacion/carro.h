@@ -1,20 +1,19 @@
 #ifndef CARRO_H
 #define CARRO_H
-#include "movimientos.h"
 
-class carro : public movimientos{
-private:
-private:
-    float velx;
-    float vely;
-    float accely;
+#include <QGraphicsPixmapItem>
+#include <QKeyEvent>
+#include <QObject>
+
+class Carro : public QObject, public QGraphicsPixmapItem
+{
+    Q_OBJECT
 public:
-    //getters.
-    float getaccely();
-    //setters.
-    void setaccely(float cambioaccely);
-    //constructor.
-    carro(float velx, float vely, float accely);
+    explicit Carro(QObject *parent = nullptr);
+    void keyPressEvent(QKeyEvent *event) override;
+
+private:
+    int velocidadLateral;
 };
 
 #endif // CARRO_H
