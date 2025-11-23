@@ -1,0 +1,31 @@
+<RCC>
+    <qresource prefix="/">
+        <file>Imagenes/fondoNivel3.png</file>
+        <file>Imagenes/obstaculo3.png</file>
+        <file>Imagenes/carro.png</file>
+        <file>Imagenes/llama.png</file>
+        <file>Imagenes/obstaculo1.png</file>
+        <file>Imagenes/obstaculo2.png</file>
+        <file>Imagenes/explosion.png</file>
+        <file>Imagenes/bloque1.png</file>
+        <file>Imagenes/bloque2.png</file>
+        <file>Imagenes/bolacanon.png</file>
+        <file>Imagenes/canonapuntando.png</file>
+        <file>Imagenes/canondisparando.png</file>
+        <file>Imagenes/soldadoapuntando.png</file>
+        <file>Imagenes/fondonivel1.png</file>
+        <file>audios/audiodesierto.wav</file>
+        <file>audios/audioescape.wav</file>
+        <file>audios/audiopelea.wav</file>
+        <file>audios/choquecarro.wav</file>
+        <file>audios/disparocanon.wav</file>
+        <file>audios/disparopistola.wav</file>
+        <file>audios/recoleccion.wav</file>
+        <file>Imagenes/indio1.png</file>
+        <file>Imagenes/indio2.png</file>
+        <file>Imagenes/indio3.png</file>
+        <file>Imagenes/indio4.png</file>
+        <file>Imagenes/fondomenu.jpg</file>
+    </qresource>
+    <qresource prefix="/audios"/>
+</RCC>
