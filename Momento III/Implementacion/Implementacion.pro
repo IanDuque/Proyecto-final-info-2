@@ -13,19 +13,31 @@ SOURCES += \
     carro.cpp \
     egipcio.cpp \
     espaniol.cpp \
+    explosion.cpp \
     indio.cpp \
     main.cpp \
     mainwindow.cpp \
-    movimientos.cpp
+    movimientos.cpp \
+    nivel1.cpp \
+    nivel2.cpp \
+    nivel3.cpp \
+    nivelbase.cpp \
+    obstaculo.cpp
 
 HEADERS += \
     armas.h \
     carro.h \
     egipcio.h \
     espaniol.h \
+    explosion.h \
     indio.h \
     mainwindow.h \
-    movimientos.h
+    movimientos.h \
+    nivel1.h \
+    nivel2.h \
+    nivel3.h \
+    nivelbase.h \
+    obstaculo.h
 
 FORMS += \
     mainwindow.ui
@@ -34,3 +46,6 @@ FORMS += \
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+RESOURCES += \
+    sprites.qrc
