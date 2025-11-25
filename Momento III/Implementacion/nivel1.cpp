@@ -8,6 +8,10 @@ nivel1::nivel1(QObject *parent)
     velocidadFondo = 0;
     configurarFondo();
     inicializarJugador();
+
+    if (timerSpawn) {
+        timerSpawn->stop();
+    }
 }
 
 void nivel1::inicializarJugador()

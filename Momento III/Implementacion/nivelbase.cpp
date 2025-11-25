@@ -4,8 +4,10 @@
 #include "carro.h" // Incluir aquí para la colisión
 
 NivelBase::NivelBase(QObject *parent)
-    : QGraphicsScene(parent), jugador(nullptr) // Inicializa jugador a nullptr (seguridad)
+    : QGraphicsScene(parent), jugador(nullptr),    fondo1(nullptr),  // <--- Se agrego esto
+    fondo2(nullptr) // Inicializa jugador a nullptr (seguridad)
 {
+
     setSceneRect(0, 0, 800, 600);
 
     velocidadFondo = 5;
@@ -33,7 +35,7 @@ void NivelBase::iniciarTimers()
 
 NivelBase::~NivelBase()
 {
-    // Detener los Timers
+    // 1. Detener y eliminar los Timers (Esto es correcto y necesario)
     if (timerLoop) {
         timerLoop->stop();
         delete timerLoop;
@@ -50,28 +52,11 @@ NivelBase::~NivelBase()
         timerSecond = nullptr;
     }
 
-    // Eliminar el jugador
-    if (jugador) {
-        delete jugador;
-        jugador = nullptr;
-    }
+    // 2. IMPORTANTE: NO eliminar 'jugador', 'fondo1', 'fondo2' ni items de 'obstaculos'.
+    // QGraphicsScene se encarga de borrarlos automáticamente al destruirse.
+    // Si usas 'delete jugador' aquí, el juego CRASHEA.
 
-    // Eliminar fondos
-    if (fondo1) {
-        delete fondo1;
-        fondo1 = nullptr;
-    }
-    if (fondo2) {
-        delete fondo2;
-        fondo2 = nullptr;
-    }
-
-    // Eliminar Obstáculos
-    for (Obstaculo *obs : obstaculos) {
-        if (obs) {
-            delete obs;
-        }
-    }
+    // Solo limpiamos la lista para no dejar referencias sueltas.
     obstaculos.clear();
 }
 
@@ -158,7 +143,7 @@ void NivelBase::spawnObstacle()
     QString path = getObstaculoPath();
 
     // **VERIFICACIÓN DE SEGURIDAD:** Solo crea un obstáculo si la ruta no está vacía.
-    if (path.isEmpty()) {
+    if (path.isEmpty() || path == "") {
         return; // Salir si el nivel no tiene obstáculos (como nivel1)
     }
 

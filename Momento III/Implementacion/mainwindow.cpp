@@ -73,8 +73,21 @@ void MainWindow::configurarHUD()
 void MainWindow::limpiarNivelActual()
 {
     if (nivelActual) {
+        // 1. Salvar el HUD: Quitamos los textos de la escena antes de destruirla
+        // Si no hacemos esto, la escena borra el texto y el siguiente nivel falla.
+        if (textoTiempo && textoTiempo->scene() == nivelActual) {
+            nivelActual->removeItem(textoTiempo);
+        }
+        if (textoVelocidad && textoVelocidad->scene() == nivelActual) {
+            nivelActual->removeItem(textoVelocidad);
+        }
+
+        // 2. Desconectar señales y borrar el nivel de forma segura
         nivelActual->disconnect();
+
+        // Usamos deleteLater() en lugar de delete para evitar conflictos de eventos pendientes
         nivelActual->deleteLater();
+
         nivelActual = nullptr;
     }
 }
