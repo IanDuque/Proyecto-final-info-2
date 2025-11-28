@@ -24,11 +24,32 @@ Obstaculo::Obstaculo(const QString &basePath, QObject *parent) : QObject(parent)
     int randomX = QRandomGenerator::global()->bounded(290, 455);
     setPos(randomX, -100);
 
+    // GUARDAMOS LA X ORIGINAL
+    xOriginal = randomX;
+    esSenoidal = false; // Por defecto es recto
+
     // 3. Velocidad propia aleatoria
     velocidadPropia = QRandomGenerator::global()->bounded(2, 5);
+}
+void Obstaculo::setMovimientoSenoidal(bool activar)
+{
+    esSenoidal = activar;
+    // Si ya bajó un poco y se activa el modo, actualizamos xOriginal
+    // para que no salte bruscamente, o lo dejamos basado en el spawn.
+    // Para simplificar, usamos el del spawn.
 }
 
 void Obstaculo::mover(int velocidadEscenario)
 {
-    setPos(x(), y() + velocidadEscenario + velocidadPropia);
+    int nuevaY = y() + velocidadEscenario + velocidadPropia;
+    int nuevaX = x();
+
+    if (esSenoidal) {
+        // Fórmula: x = Centro + Amplitud * sin(Frecuencia * Y)
+        // Amplitud 40: Se mueve 40px a la izquierda y 40px a la derecha
+        // Frecuencia 0.02: Define qué tan cerradas son las curvas
+        nuevaX = xOriginal + 40 * qSin(nuevaY * 0.02);
+    }
+
+    setPos(nuevaX, nuevaY);
 }

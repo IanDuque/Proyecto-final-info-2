@@ -1,25 +1,50 @@
 #include "explosion.h"
-#include <QTimer>
-#include <QPixmap>
+#include <QDebug>
 
 Explosion::Explosion(QObject *parent) : QObject(parent)
 {
-    // 1. Cargar la imagen gigante
-    QPixmap pixmap(":/Imagenes/explosion.png"); // Asegúrate que el nombre coincida en tu .qrc
+    // 1. Cargar los 4 sprites en la lista
+    for (int i = 1; i <= 4; ++i) {
+        // Construye la ruta dinámicamente: ":/Imagenes/explosion1.png", etc.
+        QString path = QString(":/Imagenes/explosion%1.png").arg(i);
+        QPixmap pix(path);
 
-    // 2. ESCALAR: De 1024x1024 a 80x80
-    // Usamos KeepAspectRatio para que no se deforme si no es perfectamente cuadrada
-    if (!pixmap.isNull()) {
-        setPixmap(pixmap.scaled(80, 80, Qt::KeepAspectRatio, Qt::SmoothTransformation));
-    } else {
-        // Fallback: Cuadro rojo si no encuentra la imagen
-        QPixmap error(80, 80);
-        error.fill(Qt::red);
-        setPixmap(error);
+        if (pix.isNull()) {
+            qWarning() << "Error cargando sprite explosión:" << path;
+            // Fallback: cuadro rojo si falla alguna imagen
+            pix = QPixmap(80, 80);
+            pix.fill(Qt::red);
+        } else {
+            // Escalar a un tamaño visible (ej. 80x80)
+            pix = pix.scaled(80, 80, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        }
+        sprites.append(pix);
     }
 
-    // 3. AUTODESTRUCCIÓN
-    // Después de 500 milisegundos (0.5 segundos), este objeto se elimina solo.
-    // Esto borra la imagen de la pantalla y libera la memoria.
-    QTimer::singleShot(500, this, &QObject::deleteLater);
+    // 2. Configurar estado inicial
+    currentFrame = 0;
+    if (!sprites.isEmpty()) {
+        setPixmap(sprites[0]); // Mostrar la primera imagen
+    }
+
+    // 3. Configurar Timer para la animación
+    timerAnimacion = new QTimer(this);
+    connect(timerAnimacion, &QTimer::timeout, this, &Explosion::siguienteFrame);
+
+    // Iniciar timer: cambia de imagen cada 100ms (ajusta este valor para más rápido/lento)
+    timerAnimacion->start(100);
+}
+
+void Explosion::siguienteFrame()
+{
+    currentFrame++; // Avanzar al siguiente frame
+
+    if (currentFrame < sprites.size()) {
+        // Si aún hay imágenes, mostrar la siguiente
+        setPixmap(sprites[currentFrame]);
+    } else {
+        // Si ya mostramos las 4, detener y destruir el objeto
+        timerAnimacion->stop();
+        this->deleteLater(); // Eliminar de la escena y memoria
+    }
 }

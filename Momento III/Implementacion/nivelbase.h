@@ -24,7 +24,7 @@ public:
 
 signals:
     void nivelTerminado();
-    void actualizarHUD(int tiempo, int velocidad);
+    void actualizarHUD(int tiempo, int velocidad, int vidas);
 
 public slots:
     void gameLoop();
@@ -52,6 +52,10 @@ protected:
     // Métodos internos
     virtual void spawnObstacle();
     virtual void updateTimer();
+
+    int tiempoTotalInicial; // Para saber cuál es la mitad del tiempo
+    int vidas;              // Contador de vidas
+    bool modoSenoidalActivo; // Flag para saber si ya activamos el modo difícil
 };
 
 #endif // NIVELBASE_H

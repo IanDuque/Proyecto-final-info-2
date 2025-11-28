@@ -6,7 +6,6 @@
         <file>Imagenes/llama.png</file>
         <file>Imagenes/obstaculo1.png</file>
         <file>Imagenes/obstaculo2.png</file>
-        <file>Imagenes/explosion.png</file>
         <file>Imagenes/bloque1.png</file>
         <file>Imagenes/bloque2.png</file>
         <file>Imagenes/bolacanon.png</file>
@@ -26,6 +25,10 @@
         <file>Imagenes/indio3.png</file>
         <file>Imagenes/indio4.png</file>
         <file>Imagenes/fondomenu.jpg</file>
+        <file>Imagenes/explosion4.png</file>
+        <file>Imagenes/explosion1.png</file>
+        <file>Imagenes/explosion2.png</file>
+        <file>Imagenes/explosion3.png</file>
     </qresource>
     <qresource prefix="/audios"/>
 </RCC>

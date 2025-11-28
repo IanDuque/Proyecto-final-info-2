@@ -11,8 +11,13 @@ NivelBase::NivelBase(QObject *parent)
     setSceneRect(0, 0, 800, 600);
 
     velocidadFondo = 5;
-    tiempoRestante = 15; //el tiempo que usaremos sera 120 pero a efectos de prueba sera 15.
+    tiempoRestante = 30; //el tiempo que usaremos sera 120 pero a efectos de prueba sera 15.
     juegoTerminado = false;
+
+    vidas = 5; // COMENZAMOS CON 5 VIDAS
+    modoSenoidalActivo = false;
+    juegoTerminado = false;
+    tiempoTotalInicial = tiempoRestante;
 
     // Configurar Timers, PERO NO INICIARLOS AQUÍ (iniciarlos en MainWindow)
     timerLoop = new QTimer(this);
@@ -90,37 +95,73 @@ void NivelBase::gameLoop()
     // B. MANEJAR OBSTÁCULOS Y COLISIONES
     for (int i = 0; i < obstaculos.size(); ++i) {
         Obstaculo *obs = obstaculos[i];
+
+        // Seguridad por si el puntero es nulo
         if (!obs) {
-            // Si por alguna razón el puntero es nulo, lo eliminamos de la lista.
             obstaculos.removeAt(i);
             i--;
             continue;
         }
+
+        // 1. Mover el obstáculo
+        // (La lógica senoidal ya está dentro de la clase Obstaculo, aquí solo llamamos a mover)
         obs->mover(velocidadFondo);
 
-        // Se necesita hacer un cast a QGraphicsItem* para usar collidesWithItem
+        // 2. Detectar Colisión con el Jugador
+        // Usamos collidesWithItem para una detección precisa
         if (jugador->collidesWithItem(obs)) {
-            // ... (resto de la lógica de colisión es correcta)
-            // 1. Penalización
+
+            // --- LÓGICA DE VIDAS ---
+            vidas--;
+            qDebug() << "¡Colisión! Vidas restantes:" << vidas;
+
+            // Opcional: Reducir velocidad como penalización leve
             if (velocidadFondo > 2) {
                 velocidadFondo -= 1;
             }
-            emit actualizarHUD(tiempoRestante, velocidadFondo * 20);
 
-            // 2. Crear Explosión
+            // Actualizar HUD (Tiempo y velocidad)
+            // Si agregaste el argumento 'vidas' a tu señal, agrégalo aquí: emit actualizarHUD(..., vidas);
+            emit actualizarHUD(tiempoRestante, velocidadFondo * 20,vidas);
+
+            // --- CREAR EXPLOSIÓN ---
             Explosion *boom = new Explosion();
-            boom->setPos(obs->pos());
+            boom->setPos(obs->pos()); // La explosión aparece donde estaba el obstáculo
             addItem(boom);
 
-            // 3. Eliminar obstáculo
-            removeItem(obs);
-            delete obs;
-            obstaculos.removeAt(i);
-            i--;
-            continue;
+            // --- ELIMINAR OBSTÁCULO ---
+            removeItem(obs);       // Quitar de la escena
+            delete obs;            // Liberar memoria
+            obstaculos.removeAt(i);// Quitar de la lista
+            i--;                   // Ajustar índice porque la lista se redujo
+
+            // --- VERIFICAR DERROTA (GAME OVER) ---
+            if (vidas <= 0) {
+                juegoTerminado = true;
+
+                // Detener todos los timers
+                timerLoop->stop();
+                timerSpawn->stop();
+                timerSecond->stop();
+
+                // Mostrar Mensaje de PERDEDOR
+                QGraphicsTextItem *loseText = new QGraphicsTextItem("¡HAS PERDIDO!");
+                QFont fontLose("Arial", 30, QFont::Bold); // Fuente grande y negrita
+                loseText->setFont(fontLose);
+                loseText->setDefaultTextColor(Qt::red);
+
+                // Centrar texto (ajusta coordenadas si es necesario)
+                loseText->setPos(250, 250);
+                loseText->setZValue(20); // ZValue alto para que aparezca encima de todo
+                addItem(loseText);
+
+                return; // Salimos inmediatamente del loop
+            }
+
+            continue; // Pasamos al siguiente obstáculo del ciclo
         }
 
-        // 4. Eliminar si sale de pantalla
+        // 3. Eliminar si sale de la pantalla (parte inferior)
         if (obs->y() > 600) {
             removeItem(obs);
             delete obs;
@@ -129,7 +170,6 @@ void NivelBase::gameLoop()
         }
     }
 }
-
 QString NivelBase::getObstaculoPath() const
 {
     // Devuelve una cadena vacía o una ruta de "obstáculo nulo"
@@ -148,6 +188,9 @@ void NivelBase::spawnObstacle()
     }
 
     Obstaculo *obs = new Obstaculo(path);
+    if (modoSenoidalActivo) {
+        obs->setMovimientoSenoidal(true);
+    }
     addItem(obs);
     obstaculos.append(obs);
 }
@@ -157,7 +200,16 @@ void NivelBase::updateTimer()
     if (juegoTerminado) return;
 
     tiempoRestante--;
-    emit actualizarHUD(tiempoRestante, velocidadFondo * 20);
+    if (tiempoRestante <= (tiempoTotalInicial / 2) && !modoSenoidalActivo) {
+        modoSenoidalActivo = true;
+        qDebug() << "¡Modo Senoidal Activado!";
+
+        // Opcional: Cambiar los obstáculos que YA están en pantalla
+        for (Obstaculo* obs : obstaculos) {
+            obs->setMovimientoSenoidal(true);
+        }
+    }
+    emit actualizarHUD(tiempoRestante, velocidadFondo * 20, vidas);
 
     if (tiempoRestante <= 0) {
         juegoTerminado = true;

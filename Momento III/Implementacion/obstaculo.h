@@ -15,8 +15,15 @@ public:
     // Mueve el obstáculo hacia abajo
     void mover(int velocidadEscenario);
 
+    void setMovimientoSenoidal(bool activar);
+
 private:
-    int velocidadPropia; // Velocidad extra individual de cada obstáculo
+    int velocidadPropia;     // Velocidad extra individual de cada obstáculo
+
+    // Variables para el movimiento senoidal
+    bool esSenoidal;
+    int xOriginal;
+
 };
 
 #endif // OBSTACULO_H
