@@ -1,11 +1,10 @@
 #ifndef NIVEL1_H
 #define NIVEL1_H
-
 #include "nivelbase.h"
 
 class nivel1 : public NivelBase
 {
-    Q_OBJECT
+   Q_OBJECT
 public:
     explicit nivel1(QObject *parent = nullptr);
 

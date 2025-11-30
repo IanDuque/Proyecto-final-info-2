@@ -22,7 +22,7 @@ public:
 
 private slots:
     void iniciarNivel(int nivel);
-    void actualizarHUD(int tiempo, int velocidad);
+    void actualizarHUD(int tiempo, int velocidad, int vidas);
     void cambiarANivelSiguiente();
     void mostrarMenu();
 
@@ -33,6 +33,7 @@ private:
 
     QGraphicsTextItem *textoTiempo;
     QGraphicsTextItem *textoVelocidad;
+    QGraphicsTextItem *textoVidas; //
 
     MenuWidget *menuWidget; // Variable para el widget del menú
 

@@ -1,32 +1,51 @@
 #ifndef INDIO_H
 #define INDIO_H
 
-#include <QObject>
-#include <QGraphicsPixmapItem>
-#include <QPixmap>
-#include <QDebug>
+#include "personaje.h" // <--- Importante: Incluimos al padre
+#include <QKeyEvent>
+#include <QTimer>
 
-class indio : public QObject, public QGraphicsPixmapItem
+// Heredamos de Personaje.
+// NOTA: Ya no hace falta poner QObject ni QGraphicsPixmapItem aquí
+// porque Personaje ya los tiene.
+class Indio : public Personaje
 {
     Q_OBJECT
-private:
-    short int vida;
-    short int defensa;
-    bool controlEnabled = false;
+
 public:
-    explicit indio(short int vida_inicial = 100, short int defensa_inicial = 100, QObject *parent = nullptr);
+    // Constructor
+    explicit Indio(int vida_inicial = 100, int defensa_inicial = 100, QObject *parent = nullptr);
 
-    // Getters.
-    short int getdefensa() const;
-    short int getvida() const;
+    // Getters y Setters propios de Indio
+    int getdefensa() const;
+    void setdefensa(int cambiodefensa);
 
-    // Setters.
-    void setvida(short int nuevavida);
-    void setdefensa(short int cambiodefensa);
-
-    // Metodos.
-    void cargarSprite(const QString& rutaSprite);
+    // Métodos específicos
+    void actualizarAnimacion();
     void setControlEnabled(bool enable);
+
+    // Sobrescribimos recibirDanio para añadir lógica extra si quieres (logs, etc)
+    void recibirDanio(int valor);
+
+    // Eventos
+    void disparar();
+    void keyPressEvent(QKeyEvent *event) override;
+
+private:
+    // 'vida' YA NO ESTÁ AQUÍ. Usamos la de Personaje.
+    int defensa;
+    bool controlEnabled;
+
+    // Variables de Animación (Se mantienen igual)
+    QTimer *timerAnimacion;
+    QPixmap spriteSheetQuieto;
+    QPixmap spriteSheetCorriendo;
+    QPixmap *spriteActual;
+    int frameActual;
+    int numFrames;
+    int anchoFrame;
+    int altoFrame;
+    bool isMoving;
 };
 
 #endif // INDIO_H

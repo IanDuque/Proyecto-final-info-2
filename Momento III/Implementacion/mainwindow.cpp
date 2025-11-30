@@ -6,11 +6,12 @@
 #include <QDebug>
 #include <QMessageBox>
 #include <QFont>
-
 #include "nivel1.h"
 #include "nivel3.h"
+#include "nivel2.h"
 #include "carro.h"
 #include "indio.h"
+#include "espaniol.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow), nivelActual(nullptr), numNivelActual(0)
@@ -67,7 +68,12 @@ void MainWindow::configurarHUD()
     textoVelocidad->setDefaultTextColor(Qt::white);
     textoVelocidad->setPos(10, 40);
 
-    actualizarHUD(120, 0);
+    textoVidas = new QGraphicsTextItem();
+    textoVidas->setFont(QFont("Arial", 16));
+    textoVidas->setDefaultTextColor(Qt::red); // Rojo para que destaque
+    textoVidas->setPos(10, 70); // Debajo de la velocidad
+
+    actualizarHUD(120,0,5);
 }
 
 void MainWindow::limpiarNivelActual()
@@ -81,7 +87,8 @@ void MainWindow::limpiarNivelActual()
         if (textoVelocidad && textoVelocidad->scene() == nivelActual) {
             nivelActual->removeItem(textoVelocidad);
         }
-
+        if (textoVidas && textoVidas->scene() == nivelActual)
+            nivelActual->removeItem(textoVidas);
         // 2. Desconectar señales y borrar el nivel de forma segura
         nivelActual->disconnect();
 
@@ -125,7 +132,7 @@ void MainWindow::iniciarNivel(int nivel)
         menuWidget->hide();
     }
 
-    // Limpia el fondo del menú
+    // Limpieza visual
     ui->graphicsView->setSceneRect(0, 0, 800, 600);
     ui->graphicsView->setBackgroundBrush(QBrush(Qt::black));
     ui->graphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -157,41 +164,50 @@ void MainWindow::iniciarNivel(int nivel)
         ui->graphicsView->setScene(nivelActual);
         ui->graphicsView->fitInView(0, 0, 800, 600, Qt::KeepAspectRatio);
 
-        // Agregar HUD a la escena del nivel
+        // Agregar HUD
         nivelActual->addItem(textoTiempo);
         nivelActual->addItem(textoVelocidad);
+        nivelActual->addItem(textoVidas);
+        // Si ya implementaste el textoVidas, agrégalo aquí también
+        // nivelActual->addItem(textoVidas);
+
         textoTiempo->setZValue(10);
         textoVelocidad->setZValue(10);
+        textoVidas->setZValue(10);
 
         connect(nivelActual, &NivelBase::nivelTerminado, this, &MainWindow::cambiarANivelSiguiente);
+        // Asegúrate que la señal coincida con tu slot (si agregaste vidas, ajusta aquí)
         connect(nivelActual, &NivelBase::actualizarHUD, this, &MainWindow::actualizarHUD);
 
-        // --- LÓGICA DE CONTROL DE JUEGO, HUD Y TIMERS ---
+        // --- CORRECCIÓN LÓGICA DE CONTROL ---
 
-        bool controlManualCarro = (nivel == 3);
-        bool usarTiempo = (nivel != 1);
-        bool usarSpawn = (nivel != 1);
+        // Queremos controlar al personaje en Nivel 1 (Indio) Y en Nivel 3 (Carro)
+        bool controlHabilitado = (nivel == 1 || nivel == 3);
+
+        bool usarTiempo = (nivel != 1); // El nivel 1 es batalla, quizás no usa cuenta regresiva
+        bool usarSpawn = (nivel != 1);  // El nivel 1 tiene al Español, no obstaculos cayendo
 
         textoTiempo->setVisible(usarTiempo);
-        textoVelocidad->setVisible(nivel == 3);
+        textoVelocidad->setVisible(nivel == 3); // Solo mostrar velocidad en el carro
 
         if (nivelActual->jugador) {
 
-            // Usar dynamic_cast para acceder a setControlEnabled
+            // CORRECCIÓN 1: Usar 'indio' en minúscula si así se llama tu clase
             Carro *carroPtr = dynamic_cast<Carro*>(nivelActual->jugador);
-            indio *indioPtr = dynamic_cast<indio*>(nivelActual->jugador);
+            Indio *indioPtr = dynamic_cast<Indio*>(nivelActual->jugador);
 
             if (carroPtr) {
-                carroPtr->setControlEnabled(controlManualCarro);
+                carroPtr->setControlEnabled(controlHabilitado);
             }
             else if (indioPtr) {
-                indioPtr->setControlEnabled(controlManualCarro);
+                // CORRECCIÓN 2: Pasamos 'controlHabilitado' (true) en lugar de 'controlManualCarro' (false)
+                indioPtr->setControlEnabled(controlHabilitado);
             }
 
-            // Foco y Movimiento (Nivel 1 y 2 estáticos, Nivel 3 con control)
-            nivelActual->jugador->setFlag(QGraphicsItem::ItemIsFocusable, controlManualCarro);
+            // Foco y Movimiento
+            nivelActual->jugador->setFlag(QGraphicsItem::ItemIsFocusable, controlHabilitado);
 
-            if (controlManualCarro) {
+            if (controlHabilitado) {
                 nivelActual->jugador->setFocus();
             } else {
                 this->setFocus();
@@ -200,13 +216,13 @@ void MainWindow::iniciarNivel(int nivel)
 
         nivelActual->iniciarTimers(usarTiempo, usarSpawn);
     }
-
 }
 
-void MainWindow::actualizarHUD(int tiempo, int velocidad)
+void MainWindow::actualizarHUD(int tiempo, int velocidad, int vidas)
 {
     textoTiempo->setPlainText(QString("Tiempo: %1 s").arg(tiempo));
     textoVelocidad->setPlainText(QString("Velocidad: %1 km/h").arg(velocidad));
+    textoVidas->setPlainText(QString("Vidas: %1").arg(vidas));
 }
 
 void MainWindow::cambiarANivelSiguiente()
