@@ -21,10 +21,14 @@ public:
     // Nuevo método: Inicia los timers SÓLO cuando el nivel está listo (evita el SIGSEGV).
     void iniciarTimers();
     void iniciarTimers(bool usarTiempo = true, bool usarSpawn = true);
+    virtual void onJugadorMuere();
+    virtual void onEnemigoMuere();
 
 signals:
     void nivelTerminado();
     void actualizarHUD(int tiempo, int velocidad, int vidas);
+    void actualizarVidaIndio(int vida);
+    void actualizarVidaEspaniol(int vida);
 
 public slots:
     void gameLoop();

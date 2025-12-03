@@ -73,7 +73,16 @@ void MainWindow::configurarHUD()
     textoVidas->setDefaultTextColor(Qt::red); // Rojo para que destaque
     textoVidas->setPos(10, 70); // Debajo de la velocidad
 
-    actualizarHUD(120,0,5);
+    textoVidaIndio = new QGraphicsTextItem();
+    textoVidaIndio->setFont(QFont("Arial", 16));
+    textoVidaIndio->setDefaultTextColor(Qt::black);
+    textoVidaIndio->setPos(600, 10);  // esquina derecha
+
+    textoVidaEspaniol = new QGraphicsTextItem();
+    textoVidaEspaniol->setFont(QFont("Arial", 16));
+    textoVidaEspaniol->setDefaultTextColor(Qt::red);
+    textoVidaEspaniol->setPos(600, 40);
+
 }
 
 void MainWindow::limpiarNivelActual()
@@ -168,27 +177,41 @@ void MainWindow::iniciarNivel(int nivel)
         nivelActual->addItem(textoTiempo);
         nivelActual->addItem(textoVelocidad);
         nivelActual->addItem(textoVidas);
-        // Si ya implementaste el textoVidas, agrégalo aquí también
-        // nivelActual->addItem(textoVidas);
+        nivelActual->addItem(textoVidaIndio);
+        nivelActual->addItem(textoVidaEspaniol);
 
         textoTiempo->setZValue(10);
         textoVelocidad->setZValue(10);
         textoVidas->setZValue(10);
+        textoVidaIndio->setZValue(10);
+        textoVidaEspaniol->setZValue(10);
 
         connect(nivelActual, &NivelBase::nivelTerminado, this, &MainWindow::cambiarANivelSiguiente);
-        // Asegúrate que la señal coincida con tu slot (si agregaste vidas, ajusta aquí)
         connect(nivelActual, &NivelBase::actualizarHUD, this, &MainWindow::actualizarHUD);
+        connect(nivelActual, &NivelBase::actualizarVidaIndio, this, [this](int vida){ textoVidaIndio->setPlainText(QString("Indio: %1").arg(vida)); });
 
-        // --- CORRECCIÓN LÓGICA DE CONTROL ---
+        connect(nivelActual, &NivelBase::actualizarVidaEspaniol, this, [this](int vida){ textoVidaEspaniol->setPlainText(QString("Español: %1").arg(vida)); });
 
-        // Queremos controlar al personaje en Nivel 1 (Indio) Y en Nivel 3 (Carro)
+        if (nivel == 1) {
+            textoTiempo->setVisible(false);
+            textoVelocidad->setVisible(false);
+            textoVidas->setVisible(false);
+            textoVidaIndio->setVisible(true);
+            textoVidaEspaniol->setVisible(true);
+
+        } else if (nivel == 3) {
+            textoTiempo->setVisible(true);
+            textoVelocidad->setVisible(true);
+            textoVidas->setVisible(true);
+            textoVidaIndio->setVisible(false);
+            textoVidaEspaniol->setVisible(false);
+        }
+
+        //Queremos controlar al personaje en Nivel 1 (Indio) Y en Nivel 3 (Carro)
         bool controlHabilitado = (nivel == 1 || nivel == 3);
 
-        bool usarTiempo = (nivel != 1); // El nivel 1 es batalla, quizás no usa cuenta regresiva
-        bool usarSpawn = (nivel != 1);  // El nivel 1 tiene al Español, no obstaculos cayendo
-
-        textoTiempo->setVisible(usarTiempo);
-        textoVelocidad->setVisible(nivel == 3); // Solo mostrar velocidad en el carro
+        bool usarTiempo = (nivel != 1); // El nivel 1 es batalla, no usa cuenta regresiva
+        bool usarSpawn = (nivel != 1);  // El nivel 1 tiene al español, no obstaculos
 
         if (nivelActual->jugador) {
 

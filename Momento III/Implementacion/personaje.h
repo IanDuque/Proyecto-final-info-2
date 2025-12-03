@@ -17,6 +17,8 @@ public:
 protected:
     int vida;
     int vidaMax;
+signals:
+    void vidaCambiada(int nuevaVida);
 };
 
 #endif // PERSONAJE_H

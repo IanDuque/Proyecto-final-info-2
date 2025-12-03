@@ -1,7 +1,7 @@
 <RCC>
+    <qresource prefix="/n"/>
+    <qresource prefix="/Imagenes"/>
     <qresource prefix="/">
-        <file>Imagenes/soldadodisparando.png</file>
-        <file>Imagenes/soldadoquieto.png</file>
         <file>Imagenes/bloque1.png</file>
         <file>Imagenes/bloque2.png</file>
         <file>Imagenes/bolacanon.png</file>
@@ -15,15 +15,25 @@
         <file>Imagenes/fondomenu.jpg</file>
         <file>Imagenes/fondonivel1.png</file>
         <file>Imagenes/fondoNivel3.png</file>
-        <file>Imagenes/granada.png</file>
-        <file>Imagenes/indiocorriendo.png</file>
-        <file>Imagenes/indioquieto.png</file>
+        <file>Imagenes/indiocorriendo1.png</file>
+        <file>Imagenes/indiocorriendo2.png</file>
+        <file>Imagenes/indiocorriendo3.png</file>
+        <file>Imagenes/indiocorriendo4.png</file>
+        <file>Imagenes/indiocorriendo5.png</file>
+        <file>Imagenes/indiocorriendo6.png</file>
+        <file>Imagenes/indioquieto1.png</file>
         <file>Imagenes/lanza.png</file>
         <file>Imagenes/llama.png</file>
         <file>Imagenes/obstaculo1.png</file>
         <file>Imagenes/obstaculo2.png</file>
         <file>Imagenes/obstaculo3.png</file>
         <file>Imagenes/resultado.png</file>
+        <file>Imagenes/soldadodisparando1.png</file>
+        <file>Imagenes/soldadodisparando2.png</file>
+        <file>Imagenes/soldadodisparando3.png</file>
+        <file>Imagenes/soldadodisparando4.png</file>
+        <file>Imagenes/soldadodisparando5.png</file>
+        <file>Imagenes/soldadodisparando6.png</file>
+        <file>Imagenes/soldadoquieto1.png</file>
     </qresource>
-    <qresource prefix="/n"/>
 </RCC>

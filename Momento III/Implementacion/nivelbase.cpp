@@ -4,14 +4,14 @@
 #include "carro.h" // Incluir aquí para la colisión
 
 NivelBase::NivelBase(QObject *parent)
-    : QGraphicsScene(parent), jugador(nullptr),    fondo1(nullptr),  // <--- Se agrego esto
+    : QGraphicsScene(parent), jugador(nullptr),    fondo1(nullptr),
     fondo2(nullptr) // Inicializa jugador a nullptr (seguridad)
 {
 
     setSceneRect(0, 0, 800, 600);
 
     velocidadFondo = 5;
-    tiempoRestante = 30; //el tiempo que usaremos sera 120 pero a efectos de prueba sera 15.
+    tiempoRestante = 15; //el tiempo que usaremos sera 120 pero a efectos de prueba sera 15.
     juegoTerminado = false;
 
     vidas = 5; // COMENZAMOS CON 5 VIDAS
@@ -57,11 +57,6 @@ NivelBase::~NivelBase()
         timerSecond = nullptr;
     }
 
-    // 2. IMPORTANTE: NO eliminar 'jugador', 'fondo1', 'fondo2' ni items de 'obstaculos'.
-    // QGraphicsScene se encarga de borrarlos automáticamente al destruirse.
-    // Si usas 'delete jugador' aquí, el juego CRASHEA.
-
-    // Solo limpiamos la lista para no dejar referencias sueltas.
     obstaculos.clear();
 }
 
@@ -145,15 +140,22 @@ void NivelBase::gameLoop()
                 timerSecond->stop();
 
                 // Mostrar Mensaje de PERDEDOR
-                QGraphicsTextItem *loseText = new QGraphicsTextItem("¡HAS PERDIDO!");
+                QGraphicsTextItem *loseText = new QGraphicsTextItem("¡NO HAS CONSEGUIDO ESCAPAR!");
                 QFont fontLose("Arial", 30, QFont::Bold); // Fuente grande y negrita
+                QGraphicsTextItem *mensajeextra = new QGraphicsTextItem(" Presiona la tecla Esc para volver al menu principal.");
+                QFont fontmensaje("Arial", 20, QFont::Bold);
                 loseText->setFont(fontLose);
                 loseText->setDefaultTextColor(Qt::red);
+                mensajeextra->setFont(fontmensaje);
+                mensajeextra->setDefaultTextColor(Qt::black);
 
                 // Centrar texto (ajusta coordenadas si es necesario)
-                loseText->setPos(250, 250);
+                loseText->setPos(80, 250);
                 loseText->setZValue(20); // ZValue alto para que aparezca encima de todo
                 addItem(loseText);
+                mensajeextra->setPos(80, 320);
+                mensajeextra->setZValue(20); // ZValue alto para que aparezca encima de todo
+                addItem(mensajeextra);
 
                 return; // Salimos inmediatamente del loop
             }
@@ -217,10 +219,10 @@ void NivelBase::updateTimer()
         timerSpawn->stop();
         timerSecond->stop();
 
-        QGraphicsTextItem *winText = new QGraphicsTextItem("¡NIVEL COMPLETADO!");
+        QGraphicsTextItem *winText = new QGraphicsTextItem("¡HAS ESCAPADO!");
         winText->setFont(QFont("Arial", 24, QFont::Bold));
         winText->setDefaultTextColor(Qt::green);
-        winText->setPos(240, 250);
+        winText->setPos(250, 250);
         winText->setZValue(20);
         addItem(winText);
 
@@ -250,3 +252,7 @@ void NivelBase::iniciarTimers(bool usarTiempo, bool usarSpawn)
         timerSecond->stop();
     }
 }
+//no hacen nada ya que van a ser redefinidos en nivel 1.
+void NivelBase::onJugadorMuere(){}
+
+void NivelBase::onEnemigoMuere(){}

@@ -1,51 +1,47 @@
 #ifndef INDIO_H
 #define INDIO_H
 
-#include "personaje.h" // <--- Importante: Incluimos al padre
+#include "personaje.h"
 #include <QKeyEvent>
 #include <QTimer>
+#include <QPixmap>
+#include <QList>
 
-// Heredamos de Personaje.
-// NOTA: Ya no hace falta poner QObject ni QGraphicsPixmapItem aquí
-// porque Personaje ya los tiene.
 class Indio : public Personaje
 {
     Q_OBJECT
 
 public:
-    // Constructor
-    explicit Indio(int vida_inicial = 100, int defensa_inicial = 100, QObject *parent = nullptr);
+    explicit Indio(int vida_inicial = 100, QObject *parent = nullptr);
 
-    // Getters y Setters propios de Indio
-    int getdefensa() const;
-    void setdefensa(int cambiodefensa);
-
-    // Métodos específicos
     void actualizarAnimacion();
     void setControlEnabled(bool enable);
 
-    // Sobrescribimos recibirDanio para añadir lógica extra si quieres (logs, etc)
     void recibirDanio(int valor);
 
-    // Eventos
-    void disparar();
     void keyPressEvent(QKeyEvent *event) override;
+    void keyReleaseEvent(QKeyEvent *event) override;
+
+    void disparar();
+    void setLanzaLibre();
 
 private:
-    // 'vida' YA NO ESTÁ AQUÍ. Usamos la de Personaje.
-    int defensa;
     bool controlEnabled;
+    bool lanzaEnAire;
 
-    // Variables de Animación (Se mantienen igual)
+    // Animación
     QTimer *timerAnimacion;
-    QPixmap spriteSheetQuieto;
-    QPixmap spriteSheetCorriendo;
-    QPixmap *spriteActual;
+
+    QPixmap spriteQuieto;
+    QList<QPixmap> framesCorrer;
+
     int frameActual;
-    int numFrames;
-    int anchoFrame;
-    int altoFrame;
-    bool isMoving;
+
+    // Estado de teclas (movimiento)
+    bool arriba;
+    bool abajo;
+    bool izquierda;
+    bool derecha;
 };
 
 #endif // INDIO_H

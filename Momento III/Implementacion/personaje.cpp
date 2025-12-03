@@ -10,6 +10,7 @@ int Personaje::getVida() const { return vida; }
 void Personaje::recibirDanio(int danio) {
     vida -= danio;
     if (vida < 0) vida = 0;
+    emit vidaCambiada(vida);
 }
 
 bool Personaje::estaVivo() const { return vida > 0; }

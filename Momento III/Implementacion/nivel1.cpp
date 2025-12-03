@@ -16,6 +16,9 @@ nivel1::nivel1(QObject *parent)
     enemigo->setPos(650, 430); // A la derecha de la pantalla
     addItem(enemigo);
 
+    connect(enemigo, &Personaje::vidaCambiada,
+            this, &NivelBase::actualizarVidaEspaniol);
+
     // Detenemos spawn de obstáculos del nivel anterior porque este es de pelea 1v1
     if (timerSpawn) timerSpawn->stop();
     if (timerLoop) timerLoop->stop(); // No necesitamos loop de scroll
@@ -23,24 +26,24 @@ nivel1::nivel1(QObject *parent)
 
 void nivel1::inicializarJugador()
 {
-    // 1. Crear instancia usando 'indio' (minúscula, como tu clase)
     Indio *player = new Indio();
 
-    // 2. Asignar al puntero 'jugador' heredado de NivelBase
     jugador = player;
 
-    // 3. Posición inicial (X=50 para dar margen izquierdo, Y=430 altura del suelo)
+    connect(player, &Indio::vidaCambiada, this, [this](int nuevaVida){
+    emit actualizarHUD(tiempoRestante, 0, nuevaVida);
+    });
+
     jugador->setPos(50, 430);
 
-    // 4. CRÍTICO: Permitir que el objeto reciba eventos de teclado de Qt
     jugador->setFlag(QGraphicsItem::ItemIsFocusable);
 
-    // 5. CRÍTICO: Activar tu lógica interna de movimiento (variable bool controlEnabled)
     player->setControlEnabled(true);
 
-    // 6. Añadir a la escena y forzar el foco inmediatamente
     addItem(jugador);
     jugador->setFocus();
+    connect(player, &Personaje::vidaCambiada,
+            this, &NivelBase::actualizarVidaIndio);
 }
 
 QString nivel1::getFondoPath() const
@@ -63,4 +66,60 @@ void nivel1::configurarFondo()
     fondo1 = new QGraphicsPixmapItem(bg);
     fondo1->setPos(0, 0);
     addItem(fondo1);
+}
+void nivel1::onJugadorMuere()
+{
+    if (juegoTerminado) return;
+    juegoTerminado = true;
+
+    // Detener timers por seguridad
+    if (timerLoop)   timerLoop->stop();
+    if (timerSpawn)  timerSpawn->stop();
+    if (timerSecond) timerSecond->stop();
+
+    // Texto principal: derrota
+    QGraphicsTextItem *loseText = new QGraphicsTextItem(QString::fromUtf8("¡Has sido derrotado!"));
+    QFont fontLose("Arial", 30, QFont::Bold);
+    loseText->setFont(fontLose);
+    loseText->setDefaultTextColor(Qt::red);
+    loseText->setPos(160, 250);
+    loseText->setZValue(20);
+    addItem(loseText);
+
+    // Texto secundario: volver al menú
+    QGraphicsTextItem *mensajeextra = new QGraphicsTextItem(QString::fromUtf8("Presiona Esc para volver al menú principal."));
+    QFont fontMensaje("Arial", 20, QFont::Bold);
+    mensajeextra->setFont(fontMensaje);
+    mensajeextra->setDefaultTextColor(Qt::black);
+    mensajeextra->setPos(100, 320);
+    mensajeextra->setZValue(20);
+    addItem(mensajeextra);
+}
+
+void nivel1::onEnemigoMuere()
+{
+    if (juegoTerminado) return;
+    juegoTerminado = true;
+
+    if (timerLoop)   timerLoop->stop();
+    if (timerSpawn)  timerSpawn->stop();
+    if (timerSecond) timerSecond->stop();
+
+    // Texto principal: victoria
+    QGraphicsTextItem *winText = new QGraphicsTextItem(QString::fromUtf8("¡Has derrotado al enemigo!"));
+    QFont fontWin("Arial", 30, QFont::Bold);
+    winText->setFont(fontWin);
+    winText->setDefaultTextColor(Qt::green);
+    winText->setPos(120, 250);
+    winText->setZValue(20);
+    addItem(winText);
+
+    // Texto secundario
+    QGraphicsTextItem *mensajeextra = new QGraphicsTextItem(QString::fromUtf8("Presiona Esc para volver al menú principal."));
+    QFont fontMensaje("Arial", 20, QFont::Bold);
+    mensajeextra->setFont(fontMensaje);
+    mensajeextra->setDefaultTextColor(Qt::black);
+    mensajeextra->setPos(100, 320);
+    mensajeextra->setZValue(20);
+    addItem(mensajeextra);
 }

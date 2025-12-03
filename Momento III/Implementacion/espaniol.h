@@ -3,6 +3,9 @@
 
 #include "personaje.h"
 #include <QTimer>
+#include <QPixmap>
+#include <QList>
+#include <QGraphicsPixmapItem>
 
 class Espaniol : public Personaje
 {
@@ -10,24 +13,31 @@ class Espaniol : public Personaje
 public:
     explicit Espaniol(QObject *parent = nullptr);
 
+    void recibirDanio(int danio);
+
 private slots:
     void disparar();
     void actualizarAnimacion();
-    void finalizarDisparo(); // Para volver a estado quieto
+    void finalizarDisparo();
 
 private:
     QTimer *timerAtaque;
     QTimer *timerAnimacion;
 
-    QPixmap spriteSheetQuieto;
-    QPixmap spriteSheetDisparando;
-    QPixmap *spriteActual;
+    // Sprites del soldado
+    QPixmap spriteQuieto;
+    QList<QPixmap> framesDisparar;
 
     int frameActual;
-    int numFrames;
-    int anchoFrame;
-    int altoFrame;
     bool atacando;
+    bool usandoCanon;
+    int reduccionDanio;
+
+    // Cańón
+    QGraphicsPixmapItem *canon;
+    QPixmap spriteCanonApuntando;
+    QPixmap spriteCanonDisparando;
+    bool disparandoCanon;
 };
 
 #endif // ESPANIOL_H

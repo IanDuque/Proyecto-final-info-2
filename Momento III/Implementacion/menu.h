@@ -4,6 +4,8 @@
 #include <QWidget>
 #include <QPushButton>
 #include <QGridLayout>
+#include <QPixmap>
+#include <QPaintEvent>
 
 class MenuWidget : public QWidget
 {
@@ -13,20 +15,22 @@ public:
     explicit MenuWidget(QWidget *parent = nullptr);
 
 signals:
-    // Señales que la MainWindow conectará para iniciar los niveles
     void nivelSeleccionado(int nivel);
 
 private slots:
-    // Slots internos para manejar los clicks de los botones
     void on_botonNivel1_clicked();
     void on_botonNivel2_clicked();
     void on_botonNivel3_clicked();
 
+protected:
+    void paintEvent(QPaintEvent *event) override;
+
 private:
-    // Componentes del menú
     QPushButton *botonNivel1;
     QPushButton *botonNivel2;
     QPushButton *botonNivel3;
+
+    QPixmap fondomenu;
 };
 
 #endif // MENUWIDGET_H

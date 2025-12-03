@@ -12,6 +12,8 @@ protected:
     void configurarFondo() override;
     QString getFondoPath() const override;
     void inicializarJugador() override; // Implementación del Indio
+    void onJugadorMuere() override;
+    void onEnemigoMuere() override;
 };
 
 #endif // NIVEL1_H

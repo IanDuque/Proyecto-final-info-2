@@ -33,7 +33,9 @@ private:
 
     QGraphicsTextItem *textoTiempo;
     QGraphicsTextItem *textoVelocidad;
-    QGraphicsTextItem *textoVidas; //
+    QGraphicsTextItem *textoVidas;
+    QGraphicsTextItem *textoVidaIndio;
+    QGraphicsTextItem *textoVidaEspaniol;
 
     MenuWidget *menuWidget; // Variable para el widget del menú
 

@@ -9,7 +9,9 @@ class Proyectil : public QObject, public QGraphicsPixmapItem
 {
     Q_OBJECT
 public:
-    // tipo: 1 = Lanza (Indio), 2 = Bola Cañon (Español)
+    // 1 = Lanza
+    // 2 = Bala de cañón
+    // 3 = Bala de pistola
     Proyectil(double xIni, double yIni, double angulo, double velocidad, int tipo, QObject *parent = nullptr);
 
 private slots:
@@ -17,10 +19,20 @@ private slots:
 
 private:
     QTimer *timer;
-    double x, y;          // Posición actual
-    double vx, vy;        // Velocidades
-    double gravedad;      // Gravedad (ej. 9.8 o ajustada a pixeles)
-    int tipoProyectil;    // Para saber a quién daña
+
+    // Posición actual
+    double x;
+    double y;
+
+    // Velocidades
+    double vx;
+    double vy;
+
+    // Física
+    double gravedad;
+
+    // Tipo de proyectil
+    int tipoProyectil;
 };
 
 #endif // PROYECTIL_H
