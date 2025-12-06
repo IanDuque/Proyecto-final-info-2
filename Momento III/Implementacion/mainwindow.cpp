@@ -1,245 +1,221 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+
 #include <QPixmap>
-#include <QPalette>
 #include <QBrush>
 #include <QDebug>
-#include <QMessageBox>
 #include <QFont>
+
 #include "nivel1.h"
-#include "nivel3.h"
 #include "nivel2.h"
-#include "carro.h"
-#include "indio.h"
-#include "espaniol.h"
+#include "nivel3.h"
+#include "menu.h"
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), ui(new Ui::MainWindow), nivelActual(nullptr), numNivelActual(0)
+    : QMainWindow(parent),
+    ui(new Ui::MainWindow),
+    nivelActual(nullptr),
+    menuWidget(nullptr)
 {
     ui->setupUi(this);
-    this->setFixedSize(800 + 20, 600 + 60);
+
+    this->setFixedSize(820, 660);
 
     configurarHUD();
 
-    // CREACIÓN DEL WIDGET DEL MENÚ
-    menuWidget = new MenuWidget(ui->graphicsView);
+    // Crear menú y conectarlo
+    menuWidget = new MenuWidget(this);
     connect(menuWidget, &MenuWidget::nivelSeleccionado, this, &MainWindow::iniciarNivel);
 
-    QGraphicsScene tempScene;
-    ui->graphicsView->setScene(&tempScene);
-    tempScene.setSceneRect(0, 0, 800, 600);
-
-    // Aplicar el ajuste de tamaño
-    ui->graphicsView->setFixedSize(800, 600); // Fija el tamaño del widget QGraphicsView
-    this->adjustSize();
-
-    // Revertir a la escena correcta
-    ui->graphicsView->setScene(nullptr);
-
-    mostrarMenu();
-
-    ui->graphicsView->fitInView(0, 0, 800, 600, Qt::KeepAspectRatio);
-
-    this->setFixedSize(this->size());
-
-    ui->graphicsView->fitInView(0, 0, 800, 600, Qt::KeepAspectRatio);
-
-    // Conectar la señal del MenuWidget a la lógica de la MainWindow
-    connect(menuWidget, &MenuWidget::nivelSeleccionado, this, &MainWindow::iniciarNivel);
-
-    // MOSTRAR EL MENÚ AL INICIAR EL JUEGO
     mostrarMenu();
 }
 
 MainWindow::~MainWindow()
 {
+    limpiarNivelActual();
     delete ui;
 }
 
+
+// =====================================================
+//                      HUD
+// =====================================================
+
 void MainWindow::configurarHUD()
 {
-    textoTiempo = new QGraphicsTextItem();
+    textoTiempo = new QGraphicsTextItem("Tiempo: ");
     textoTiempo->setFont(QFont("Arial", 16));
     textoTiempo->setDefaultTextColor(Qt::white);
     textoTiempo->setPos(10, 10);
 
-    textoVelocidad = new QGraphicsTextItem();
+    textoVelocidad = new QGraphicsTextItem("Velocidad:");
     textoVelocidad->setFont(QFont("Arial", 16));
     textoVelocidad->setDefaultTextColor(Qt::white);
     textoVelocidad->setPos(10, 40);
 
-    textoVidas = new QGraphicsTextItem();
+    textoVidas = new QGraphicsTextItem("Vidas:");
     textoVidas->setFont(QFont("Arial", 16));
-    textoVidas->setDefaultTextColor(Qt::red); // Rojo para que destaque
-    textoVidas->setPos(10, 70); // Debajo de la velocidad
+    textoVidas->setDefaultTextColor(Qt::red);
+    textoVidas->setPos(10, 70);
 
-    textoVidaIndio = new QGraphicsTextItem();
+    textoVidaIndio = new QGraphicsTextItem("Indio:");
     textoVidaIndio->setFont(QFont("Arial", 16));
     textoVidaIndio->setDefaultTextColor(Qt::black);
-    textoVidaIndio->setPos(600, 10);  // esquina derecha
+    textoVidaIndio->setPos(600, 10);
 
-    textoVidaEspaniol = new QGraphicsTextItem();
+    textoVidaEspaniol = new QGraphicsTextItem("Español:");
     textoVidaEspaniol->setFont(QFont("Arial", 16));
     textoVidaEspaniol->setDefaultTextColor(Qt::red);
     textoVidaEspaniol->setPos(600, 40);
-
 }
+
+
+// =====================================================
+//      ELIMINAR ESCENA PREVIA SIN CRASHEAR
+// =====================================================
 
 void MainWindow::limpiarNivelActual()
 {
-    if (nivelActual) {
-        // 1. Salvar el HUD: Quitamos los textos de la escena antes de destruirla
-        // Si no hacemos esto, la escena borra el texto y el siguiente nivel falla.
-        if (textoTiempo && textoTiempo->scene() == nivelActual) {
-            nivelActual->removeItem(textoTiempo);
-        }
-        if (textoVelocidad && textoVelocidad->scene() == nivelActual) {
-            nivelActual->removeItem(textoVelocidad);
-        }
-        if (textoVidas && textoVidas->scene() == nivelActual)
-            nivelActual->removeItem(textoVidas);
-        // 2. Desconectar señales y borrar el nivel de forma segura
-        nivelActual->disconnect();
+    if (!nivelActual)
+        return;
 
-        // Usamos deleteLater() en lugar de delete para evitar conflictos de eventos pendientes
-        nivelActual->deleteLater();
+    nivelActual->disconnect();
 
-        nivelActual = nullptr;
+    // Retirar HUD si estaba en la escena
+    for (QGraphicsTextItem *item :{textoTiempo, textoVelocidad, textoVidas, textoVidaIndio, textoVidaEspaniol})
+    {
+        if (item && item->scene())
+            item->scene()->removeItem(item);
     }
+
+    ui->graphicsView->setScene(nullptr);
+
+    nivelActual->deleteLater();
+    nivelActual = nullptr;
 }
+
+
+// =====================================================
+//                      MENÚ PRINCIPAL
+// =====================================================
 
 void MainWindow::mostrarMenu()
 {
-    ui->graphicsView->setSceneRect(0, 0, 800, 600);
-    ui->graphicsView->setBackgroundBrush(QBrush(Qt::black));
-    ui->graphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    ui->graphicsView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    this->setFixedSize(800 + 20, 600 + 60);
+    limpiarNivelActual();
 
-    // 1. Configurar el fondo de la QGraphicsView con fondomenu.png
+    ui->graphicsView->setScene(nullptr);
+
+    // Fondo del menú
     QPixmap bg(":/Imagenes/fondomenu.jpg");
-    if (!bg.isNull()) {
-        bg = bg.scaled(ui->graphicsView->size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-        QBrush brush(bg);
-        ui->graphicsView->setBackgroundBrush(brush);
-    } else {
+    if (!bg.isNull())
+        ui->graphicsView->setBackgroundBrush(QBrush(bg.scaled(800, 600, Qt::IgnoreAspectRatio)));
+    else
         ui->graphicsView->setBackgroundBrush(QBrush(Qt::darkBlue));
-    }
 
-    // 2. Ajustar el tamaño y mostrar el widget del menú
-    menuWidget->resize(ui->graphicsView->size());
+    menuWidget->setGeometry(0, 0, 800, 600);
     menuWidget->show();
-
-    // **Ajuste preventivo también en el menú**
-    ui->graphicsView->setSceneRect(0, 0, 800, 600);
-    ui->graphicsView->fitInView(0, 0, 800, 600, Qt::KeepAspectRatio);
 }
+
+
+// =====================================================
+//                      INICIAR NIVEL
+// =====================================================
 
 void MainWindow::iniciarNivel(int nivel)
 {
-    if (menuWidget) {
-        menuWidget->hide();
-    }
-
-    // Limpieza visual
-    ui->graphicsView->setSceneRect(0, 0, 800, 600);
-    ui->graphicsView->setBackgroundBrush(QBrush(Qt::black));
-    ui->graphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    ui->graphicsView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    this->setFixedSize(800 + 20, 600 + 60);
+    menuWidget->hide();
 
     limpiarNivelActual();
 
-    numNivelActual = nivel;
     NivelBase *nuevoNivel = nullptr;
 
-    switch (nivel) {
+    switch (nivel)
+    {
     case 1:
         nuevoNivel = new nivel1(this);
         break;
     case 2:
-        // nuevoNivel = new nivel2(this);
+        nuevoNivel = new nivel2(this);
         break;
     case 3:
         nuevoNivel = new Nivel3(this);
         break;
-    default:
-        QMessageBox::information(this, "Fin del Juego", "¡Has completado el último nivel!");
+    case 4:
+        mostrarMenu();
         return;
     }
 
-    if (nuevoNivel) {
-        nivelActual = nuevoNivel;
-        ui->graphicsView->setScene(nivelActual);
-        ui->graphicsView->fitInView(0, 0, 800, 600, Qt::KeepAspectRatio);
+    if (!nuevoNivel)
+        return;
 
-        // Agregar HUD
-        nivelActual->addItem(textoTiempo);
-        nivelActual->addItem(textoVelocidad);
-        nivelActual->addItem(textoVidas);
-        nivelActual->addItem(textoVidaIndio);
-        nivelActual->addItem(textoVidaEspaniol);
+    nivelActual = nuevoNivel;
 
-        textoTiempo->setZValue(10);
-        textoVelocidad->setZValue(10);
-        textoVidas->setZValue(10);
-        textoVidaIndio->setZValue(10);
-        textoVidaEspaniol->setZValue(10);
+    ui->graphicsView->setScene(nivelActual);
+    ui->graphicsView->fitInView(0, 0, 800, 600, Qt::KeepAspectRatio);
 
-        connect(nivelActual, &NivelBase::nivelTerminado, this, &MainWindow::cambiarANivelSiguiente);
-        connect(nivelActual, &NivelBase::actualizarHUD, this, &MainWindow::actualizarHUD);
-        connect(nivelActual, &NivelBase::actualizarVidaIndio, this, [this](int vida){ textoVidaIndio->setPlainText(QString("Indio: %1").arg(vida)); });
+    // Añadir HUD a la escena
+    nivelActual->addItem(textoTiempo);
+    nivelActual->addItem(textoVelocidad);
+    nivelActual->addItem(textoVidas);
+    nivelActual->addItem(textoVidaIndio);
+    nivelActual->addItem(textoVidaEspaniol);
 
-        connect(nivelActual, &NivelBase::actualizarVidaEspaniol, this, [this](int vida){ textoVidaEspaniol->setPlainText(QString("Español: %1").arg(vida)); });
+    textoTiempo->setZValue(10);
+    textoVelocidad->setZValue(10);
+    textoVidas->setZValue(10);
+    textoVidaIndio->setZValue(10);
+    textoVidaEspaniol->setZValue(10);
 
-        if (nivel == 1) {
-            textoTiempo->setVisible(false);
-            textoVelocidad->setVisible(false);
-            textoVidas->setVisible(false);
-            textoVidaIndio->setVisible(true);
-            textoVidaEspaniol->setVisible(true);
-
-        } else if (nivel == 3) {
-            textoTiempo->setVisible(true);
-            textoVelocidad->setVisible(true);
-            textoVidas->setVisible(true);
-            textoVidaIndio->setVisible(false);
-            textoVidaEspaniol->setVisible(false);
-        }
-
-        //Queremos controlar al personaje en Nivel 1 (Indio) Y en Nivel 3 (Carro)
-        bool controlHabilitado = (nivel == 1 || nivel == 3);
-
-        bool usarTiempo = (nivel != 1); // El nivel 1 es batalla, no usa cuenta regresiva
-        bool usarSpawn = (nivel != 1);  // El nivel 1 tiene al español, no obstaculos
-
-        if (nivelActual->jugador) {
-
-            // CORRECCIÓN 1: Usar 'indio' en minúscula si así se llama tu clase
-            Carro *carroPtr = dynamic_cast<Carro*>(nivelActual->jugador);
-            Indio *indioPtr = dynamic_cast<Indio*>(nivelActual->jugador);
-
-            if (carroPtr) {
-                carroPtr->setControlEnabled(controlHabilitado);
-            }
-            else if (indioPtr) {
-                // CORRECCIÓN 2: Pasamos 'controlHabilitado' (true) en lugar de 'controlManualCarro' (false)
-                indioPtr->setControlEnabled(controlHabilitado);
-            }
-
-            // Foco y Movimiento
-            nivelActual->jugador->setFlag(QGraphicsItem::ItemIsFocusable, controlHabilitado);
-
-            if (controlHabilitado) {
-                nivelActual->jugador->setFocus();
-            } else {
-                this->setFocus();
-            }
-        }
-
-        nivelActual->iniciarTimers(usarTiempo, usarSpawn);
+    // Control de jugador
+    if (nivelActual->jugador)
+    {
+        nivelActual->jugador->setFlag(QGraphicsItem::ItemIsFocusable, true);
+        nivelActual->jugador->setFocus();
     }
+
+    // Conectar señales
+    connect(nivelActual, &NivelBase::nivelTerminado, this, &MainWindow::cambiarANivelSiguiente);
+    connect(nivelActual, &NivelBase::actualizarHUD, this, &MainWindow::actualizarHUD);
+    connect(nivelActual, &NivelBase::actualizarVidaIndio, this, [this](int vida){ textoVidaIndio->setPlainText(QString("Indio: %1").arg(vida)); });
+
+    connect(nivelActual, &NivelBase::actualizarVidaEspaniol, this, [this](int vida){ textoVidaEspaniol->setPlainText(QString("Español: %1").arg(vida)); });
+
+    // Personalizar visibilidad del HUD por nivel
+    if (nivel == 1)
+    {
+        textoTiempo->setVisible(false);
+        textoVelocidad->setVisible(false);
+        textoVidas->setVisible(false);
+        textoVidaIndio->setVisible(true);
+        textoVidaEspaniol->setVisible(true);
+    }
+    else if (nivel == 2)
+    {
+        textoTiempo->setVisible(true);
+        textoVelocidad->setVisible(false);
+        textoVidas->setVisible(false);
+        textoVidaIndio->setVisible(false);
+        textoVidaEspaniol->setVisible(false);
+    }
+    else if (nivel == 3)
+    {
+        textoTiempo->setVisible(true);
+        textoVelocidad->setVisible(true);
+        textoVidas->setVisible(true);
+        textoVidaIndio->setVisible(false);
+        textoVidaEspaniol->setVisible(false);
+    }
+
+    bool usarTiempo = (nivel != 1);
+    bool usarSpawn = (nivel == 3);
+
+    nivelActual->iniciarTimers(usarTiempo, usarSpawn);
 }
+
+
+// =====================================================
+//               HUD AUTOMÁTICO DURANTE EL NIVEL
+// =====================================================
 
 void MainWindow::actualizarHUD(int tiempo, int velocidad, int vidas)
 {
@@ -248,7 +224,13 @@ void MainWindow::actualizarHUD(int tiempo, int velocidad, int vidas)
     textoVidas->setPlainText(QString("Vidas: %1").arg(vidas));
 }
 
+
+// =====================================================
+//        REGRESAR AL MENÚ CUANDO ACABA UN NIVEL
+// =====================================================
+
 void MainWindow::cambiarANivelSiguiente()
 {
-    iniciarNivel(numNivelActual + 1);
+    limpiarNivelActual();
+    mostrarMenu();
 }

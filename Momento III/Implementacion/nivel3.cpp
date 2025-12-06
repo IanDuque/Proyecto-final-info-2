@@ -12,6 +12,7 @@ void Nivel3::inicializarJugador()
 {
     Carro *player = new Carro();
     jugador = player; // Asignamos el Carro al puntero base
+    player->setControlEnabled(true);
 
     jugador->setPos(360, 500);
     jugador->setFlag(QGraphicsItem::ItemIsFocusable);

@@ -117,14 +117,8 @@ void nivel1::onJugadorMuere()
     loseText->setZValue(20);
     addItem(loseText);
 
-    // Texto secundario: volver al menú
-    QGraphicsTextItem *mensajeextra = new QGraphicsTextItem(QString::fromUtf8("Presiona Esc para volver al menú principal."));
-    QFont fontMensaje("Arial", 20, QFont::Bold);
-    mensajeextra->setFont(fontMensaje);
-    mensajeextra->setDefaultTextColor(Qt::black);
-    mensajeextra->setPos(100, 320);
-    mensajeextra->setZValue(20);
-    addItem(mensajeextra);
+    //para regresar automaticamente al menu tras 3 segundos de acabar el nivel.
+    QTimer::singleShot(3000, this, [this](){ emit nivelTerminado(); });
 }
 
 void nivel1::onEnemigoMuere()
@@ -145,14 +139,8 @@ void nivel1::onEnemigoMuere()
     winText->setZValue(20);
     addItem(winText);
 
-    // Texto secundario
-    QGraphicsTextItem *mensajeextra = new QGraphicsTextItem(QString::fromUtf8("Presiona Esc para volver al menú principal."));
-    QFont fontMensaje("Arial", 20, QFont::Bold);
-    mensajeextra->setFont(fontMensaje);
-    mensajeextra->setDefaultTextColor(Qt::black);
-    mensajeextra->setPos(100, 320);
-    mensajeextra->setZValue(20);
-    addItem(mensajeextra);
+    //para regresar automaticamente al menu tras 3 segundos de acabar el nivel.
+    QTimer::singleShot(3000, this, [this](){ emit nivelTerminado(); });
 }
 
 void nivel1::onPersonajeMuerto(Personaje *p)

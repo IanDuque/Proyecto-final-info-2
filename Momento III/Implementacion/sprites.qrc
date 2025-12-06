@@ -38,5 +38,14 @@
         <file>Imagenes/espaniolderrotado.png</file>
         <file>Imagenes/fondonivel2.jpg</file>
         <file>Imagenes/indioderrotado.png</file>
+        <file>Imagenes/egipciocaminaderecha1.png</file>
+        <file>Imagenes/egipciocaminaderecha2.png</file>
+        <file>Imagenes/egipciocaminaespalda1.png</file>
+        <file>Imagenes/egipciocaminaespalda2.png</file>
+        <file>Imagenes/egipciocaminafrente1.png</file>
+        <file>Imagenes/egipciocaminafrente2.png</file>
+        <file>Imagenes/egipciocaminaizquierda1.png</file>
+        <file>Imagenes/egipciocaminaizquierda2.png</file>
+        <file>Imagenes/egipcioquietofrente.png</file>
     </qresource>
 </RCC>

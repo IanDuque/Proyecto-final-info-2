@@ -64,7 +64,7 @@ void NivelBase::gameLoop()
 {
     if (juegoTerminado) return;
 
-    // CRÍTICO: Protección contra el puntero nulo del jugador (Evita SIGSEGV)
+    // Protección contra el puntero nulo del jugador (Evita SIGSEGV)
     if (!jugador) {
         qWarning() << "Error: jugador es nullptr en gameLoop.";
         return;
@@ -87,7 +87,7 @@ void NivelBase::gameLoop()
     if (fondo2 && fondo2->y() >= 600) {
         fondo2->setPos(0, -600);
     }
-    // B. MANEJAR OBSTÁCULOS Y COLISIONES
+    // MANEJAR OBSTÁCULOS Y COLISIONES
     for (int i = 0; i < obstaculos.size(); ++i) {
         Obstaculo *obs = obstaculos[i];
 
@@ -142,22 +142,16 @@ void NivelBase::gameLoop()
                 // Mostrar Mensaje de PERDEDOR
                 QGraphicsTextItem *loseText = new QGraphicsTextItem("¡NO HAS CONSEGUIDO ESCAPAR!");
                 QFont fontLose("Arial", 30, QFont::Bold); // Fuente grande y negrita
-                QGraphicsTextItem *mensajeextra = new QGraphicsTextItem(" Presiona la tecla Esc para volver al menu principal.");
-                QFont fontmensaje("Arial", 20, QFont::Bold);
                 loseText->setFont(fontLose);
                 loseText->setDefaultTextColor(Qt::red);
-                mensajeextra->setFont(fontmensaje);
-                mensajeextra->setDefaultTextColor(Qt::black);
 
                 // Centrar texto (ajusta coordenadas si es necesario)
                 loseText->setPos(80, 250);
                 loseText->setZValue(20); // ZValue alto para que aparezca encima de todo
                 addItem(loseText);
-                mensajeextra->setPos(80, 320);
-                mensajeextra->setZValue(20); // ZValue alto para que aparezca encima de todo
-                addItem(mensajeextra);
 
-                return; // Salimos inmediatamente del loop
+                //para regresar automaticamente al menu tras 3 segundos de acabar el nivel.
+                QTimer::singleShot(3000, this, [this](){ emit nivelTerminado(); });
             }
 
             continue; // Pasamos al siguiente obstáculo del ciclo
@@ -226,8 +220,8 @@ void NivelBase::updateTimer()
         winText->setZValue(20);
         addItem(winText);
 
-        // Señal para que MainWindow cambie de nivel
-        QTimer::singleShot(2000, this, [this](){ emit nivelTerminado(); });
+        //para regresar automaticamente al menu tras 3 segundos de acabar el nivel.
+        QTimer::singleShot(3000, this, [this](){ emit nivelTerminado(); });
     }
 }
 
