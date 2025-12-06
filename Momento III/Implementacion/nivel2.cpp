@@ -83,6 +83,7 @@ void nivel2::crearLaberinto()
     const int altoEscena  = 600;
     const int size        = 40;
 
+    // --- BORDES (Tu código original intacto) ---
     // Bordes horizontales (arriba y abajo)
     for (int x = 0; x < anchoEscena; x += size) {
         Bloques *top = new Bloques();
@@ -109,6 +110,7 @@ void nivel2::crearLaberinto()
         paredes.append(right);
     }
 
+<<<<<<< HEAD
     // para generar los muros horizontales:
     for (int x = 90; x <= 500; x += size) {
         Bloques *muro = new Bloques();
@@ -120,12 +122,42 @@ void nivel2::crearLaberinto()
     for (int x = 90; x <= 620; x += size) {
         Bloques *muro = new Bloques();
         muro->setPos(x, 430);
+=======
+    // --- OBSTÁCULOS INTERNOS (Configurados según la imagen) ---
+
+    // 1. Barra Horizontal del MEDIO (Larga)
+    // Coordenada Y visual: aprox 280. X: va desde la columna izquierda hasta la derecha.
+    for (int x = 100; x <= 500; x += size) {
+        Bloques *muro = new Bloques();
+        muro->setPos(x, 200);
+>>>>>>> origin/Angel
         addItem(muro);
         paredes.append(muro);
     }
 
-    //para generar los muros verticales:
-    for (int y = 80; y <= 400; y += size) {
+    // 2. Barra Horizontal de ABAJO (Larga)
+    for (int x = 80; x <= 610; x += size) {
+        Bloques *muro = new Bloques();
+        muro->setPos(x, 428);
+        addItem(muro);
+        paredes.append(muro);
+    }
+    //Vertical grande
+    for (int y = 80; y <= 410; y += size) {
+        Bloques *muro = new Bloques();
+        muro->setPos(500, y);
+        addItem(muro);
+        paredes.append(muro);
+    }
+
+    for (int y = 348; y <= 500; y += size) {
+        Bloques *muro = new Bloques();
+        muro->setPos(350, y);
+        addItem(muro);
+        paredes.append(muro);
+    }
+
+    for (int y = 80; y <= 350; y += size) {
         Bloques *muro = new Bloques();
         muro->setPos(490, y);
         addItem(muro);
@@ -159,6 +191,27 @@ void nivel2::crearLaberinto()
         addItem(muro);
         paredes.append(muro);
     }
+
+    for (int y = 25; y <= 100; y += size) {
+        Bloques *muro = new Bloques();
+        muro->setPos(330, y);
+        addItem(muro);
+        paredes.append(muro);
+    }
+
+    for (int y = 25; y <= 100; y += size) {
+        Bloques *muro = new Bloques();
+        muro->setPos(620, y);
+        addItem(muro);
+        paredes.append(muro);
+    }
+
+
+
+
+
+
+
 }
 
 // ---------------- COLECCIONABLES (recolectables) ----------------
@@ -166,6 +219,7 @@ void nivel2::crearColeccionables()
 {
     // Coordenadas de los recolectables (fijas)
     posicionesrecolectables.clear();
+<<<<<<< HEAD
     posicionesrecolectables
         << QPointF(90, 90)
         << QPointF(200, 500)
@@ -176,6 +230,14 @@ void nivel2::crearColeccionables()
 
     // Inicializamos la lista de posiciones disponibles
     posicionesDisponibles = posicionesrecolectables;
+=======
+    posicionesrecolectables << QPointF(90, 90)
+                      << QPointF(200, 500) //no es este jajaaj
+                      << QPointF(440, 150)
+                      << QPointF(440, 370)//370
+                      << QPointF(680, 500)
+                      << QPointF(700, 70);
+>>>>>>> origin/Angel
 
     totalPorRecolectar = posicionesrecolectables.size();
     recolectados       = 0;
