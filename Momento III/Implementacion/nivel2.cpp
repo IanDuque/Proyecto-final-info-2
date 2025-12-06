@@ -82,6 +82,7 @@ void nivel2::crearLaberinto()
     const int altoEscena  = 600;
     const int size        = 40;
 
+    // --- BORDES (Tu código original intacto) ---
     // Bordes horizontales (arriba y abajo)
     for (int x = 0; x < anchoEscena; x += size) {
         Bloques *top = new Bloques();
@@ -108,21 +109,66 @@ void nivel2::crearLaberinto()
         paredes.append(right);
     }
 
-    // para generar los muros horizontales:
-    for (int x = 80; x <= 400; x += size) {
+    // --- OBSTÁCULOS INTERNOS (Configurados según la imagen) ---
+
+    // 1. Barra Horizontal del MEDIO (Larga)
+    // Coordenada Y visual: aprox 280. X: va desde la columna izquierda hasta la derecha.
+    for (int x = 100; x <= 500; x += size) {
         Bloques *muro = new Bloques();
-        muro->setPos(x, 300);
+        muro->setPos(x, 200);
         addItem(muro);
         paredes.append(muro);
     }
 
-    //para generar los muros verticales:
-    for (int y = 80; y <= 400; y += size) {
+    // 2. Barra Horizontal de ABAJO (Larga)
+    for (int x = 80; x <= 610; x += size) {
+        Bloques *muro = new Bloques();
+        muro->setPos(x, 428);
+        addItem(muro);
+        paredes.append(muro);
+    }
+    //Vertical grande
+    for (int y = 80; y <= 410; y += size) {
+        Bloques *muro = new Bloques();
+        muro->setPos(500, y);
+        addItem(muro);
+        paredes.append(muro);
+    }
+
+    for (int y = 348; y <= 500; y += size) {
+        Bloques *muro = new Bloques();
+        muro->setPos(350, y);
+        addItem(muro);
+        paredes.append(muro);
+    }
+
+    for (int y = 80; y <= 350; y += size) {
         Bloques *muro = new Bloques();
         muro->setPos(200, y);
         addItem(muro);
         paredes.append(muro);
     }
+
+    for (int y = 25; y <= 100; y += size) {
+        Bloques *muro = new Bloques();
+        muro->setPos(330, y);
+        addItem(muro);
+        paredes.append(muro);
+    }
+
+    for (int y = 25; y <= 100; y += size) {
+        Bloques *muro = new Bloques();
+        muro->setPos(620, y);
+        addItem(muro);
+        paredes.append(muro);
+    }
+
+
+
+
+
+
+
 }
 
 // ---------------- COLECCIONABLES (recolectables) ----------------
@@ -130,12 +176,12 @@ void nivel2::crearColeccionables()
 {
     // Coordenadas ejemplo (luego las ajustas al laberinto real)
     posicionesrecolectables.clear();
-    posicionesrecolectables << QPointF(120, 120)
-                      << QPointF(200, 200)
-                      << QPointF(600, 150)
-                      << QPointF(500, 400)
-                      << QPointF(150, 450)
-                      << QPointF(650, 350);
+    posicionesrecolectables << QPointF(90, 90)
+                      << QPointF(200, 500) //no es este jajaaj
+                      << QPointF(440, 150)
+                      << QPointF(440, 370)//370
+                      << QPointF(680, 500)
+                      << QPointF(700, 70);
 
     totalPorRecolectar = posicionesrecolectables.size();
     recolectados       = 0;
