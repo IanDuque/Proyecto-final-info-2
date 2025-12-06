@@ -1,42 +1,98 @@
 #include "obstaculo.h"
 #include <QRandomGenerator>
+#include <QtMath>
 
-// Recibe la ruta base (basePath, ej: ":/imagenes/obstaculo")
-Obstaculo::Obstaculo(const QString &basePath, QObject *parent) : QObject(parent)
+Obstaculo::Obstaculo(const QString &basePath, QObject *parent)
+    : QObject(parent),
+    velocidadPropia(0),
+    esSenoidal(false),
+    xOriginal(0),
+    soloDecoracion(false)
 {
-    // 1. Seleccionar imagen aleatoria (basePath + 1.png, 2.png, 3.png)
-    //int tipoObstaculo = QRandomGenerator::global()->bounded(1, 4);
-    // Combina la ruta base (ej: ":/imagenes/roca") con el número (ej: 1) y la extensión (.png)
-    QString nombreImagen = ":/Imagenes/obstaculo3.png";
+    Q_UNUSED(basePath);
 
-    QPixmap pixmap(nombreImagen);
+    // Rutas de sprites
+    QString nombreObstaculoCalle = ":/Imagenes/obstaculo3.png"; // obstáculo carretera
+    QString nombreEdificio1      = ":/Imagenes/obstaculo1.png"; // edificio 1
+    QString nombreEdificio2      = ":/Imagenes/obstaculo2.png"; // edificio 2
 
-    // Si la imagen no carga, crear un cuadro café de respaldo
-    if (pixmap.isNull()) {
-        pixmap = QPixmap(60, 60);
-        pixmap.fill(QColor("#5d4037"));
+    QPixmap pixmap;
+
+    // Queremos que sigan saliendo bien los obstáculos de carretera,
+    // así que les damos más probabilidad.
+    // rand 0..9 → 0-5: carretera (60%), 6-7: edificio izq, 8-9: edificio der
+    int r = QRandomGenerator::global()->bounded(0, 10);
+    int tipo = 0;
+    if (r <= 5)      tipo = 0; // carretera
+    else if (r <= 7) tipo = 1; // edificio izquierdo
+    else             tipo = 2; // edificio derecho
+
+    int randomX = 0;
+
+    if (tipo == 0) {
+        // ❖ Obstáculo sobre la carretera
+        soloDecoracion = false;
+
+        pixmap.load(nombreObstaculoCalle);
+        if (pixmap.isNull()) {
+            pixmap = QPixmap(60, 60);
+            pixmap.fill(QColor("#5d4037"));
+        }
+
+        pixmap = pixmap.scaled(70, 70, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        setPixmap(pixmap);
+
+        // X dentro de la carretera
+        randomX = QRandomGenerator::global()->bounded(290, 456); // [290,455]
+
+        // Velocidad extra además del fondo
+        velocidadPropia = QRandomGenerator::global()->bounded(2, 5);
+    } else {
+        // Edificios a izquierda o derecha
+        soloDecoracion = true; // MUY IMPORTANTE
+
+        bool ladoIzquierdo = (tipo == 1);
+        QString rutaEdificio = ladoIzquierdo ? nombreEdificio1 : nombreEdificio2;
+
+        pixmap.load(rutaEdificio);
+        if (pixmap.isNull()) {
+            pixmap = QPixmap(80, 80);
+            pixmap.fill(Qt::darkGray);
+        }
+
+        pixmap = pixmap.scaled(120, 120, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        setPixmap(pixmap);
+
+        if (ladoIzquierdo) {
+            // Lado izquierdo de la pantalla
+            randomX = QRandomGenerator::global()->bounded(0, 250);
+        } else {
+            // Lado derecho de la pantalla
+            randomX = QRandomGenerator::global()->bounded(550, 800);
+        }
+
+        // Edificios: solo se mueven a la velocidad del fondo
+        velocidadPropia = 0;
+        esSenoidal = false; // por si acaso
     }
 
-    // --- ESCALAR OBSTÁCULOS ---
-    setPixmap(pixmap.scaled(70, 70, Qt::KeepAspectRatio, Qt::SmoothTransformation));
-
-    // 2. Posición Aleatoria
-    int randomX = QRandomGenerator::global()->bounded(290, 455);
     setPos(randomX, -100);
-
-    // GUARDAMOS LA X ORIGINAL
     xOriginal = randomX;
-    esSenoidal = false; // Por defecto es recto
-
-    // 3. Velocidad propia aleatoria
-    velocidadPropia = QRandomGenerator::global()->bounded(2, 5);
 }
+
 void Obstaculo::setMovimientoSenoidal(bool activar)
 {
+    // Solo los obstáculos de carretera pueden ser senoidales
+    if (soloDecoracion) {
+        esSenoidal = false;
+        return;
+    }
     esSenoidal = activar;
-    // Si ya bajó un poco y se activa el modo, actualizamos xOriginal
-    // para que no salte bruscamente, o lo dejamos basado en el spawn.
-    // Para simplificar, usamos el del spawn.
+}
+
+bool Obstaculo::esSoloDecoracion() const
+{
+    return soloDecoracion;
 }
 
 void Obstaculo::mover(int velocidadEscenario)
@@ -44,10 +100,7 @@ void Obstaculo::mover(int velocidadEscenario)
     int nuevaY = y() + velocidadEscenario + velocidadPropia;
     int nuevaX = x();
 
-    if (esSenoidal) {
-        // Fórmula: x = Centro + Amplitud * sin(Frecuencia * Y)
-        // Amplitud 40: Se mueve 40px a la izquierda y 40px a la derecha
-        // Frecuencia 0.02: Define qué tan cerradas son las curvas
+    if (esSenoidal && !soloDecoracion) {
         nuevaX = xOriginal + 40 * qSin(nuevaY * 0.02);
     }
 

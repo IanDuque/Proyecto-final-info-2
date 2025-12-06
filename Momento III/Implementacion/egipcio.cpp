@@ -171,7 +171,6 @@ void Egipcio::actualizarMovimiento()
             if (m_nivel) {
                 m_nivel->incrementarRecolectados(r);
             }
-            // Ojo: no hacemos delete aquí si ya lo hace nivel2::incrementarRecolectados
         }
     }
 }
@@ -223,3 +222,4 @@ void Egipcio::detenerAcciones()
 
     setPixmap(spriteQuietoFrente);
 }
+

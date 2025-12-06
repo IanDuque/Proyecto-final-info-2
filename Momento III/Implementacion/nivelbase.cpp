@@ -104,7 +104,7 @@ void NivelBase::gameLoop()
 
         // 2. Detectar Colisión con el Jugador
         // Usamos collidesWithItem para una detección precisa
-        if (jugador->collidesWithItem(obs)) {
+        if (!obs->esSoloDecoracion() && jugador->collidesWithItem(obs)) {
 
             // --- LÓGICA DE VIDAS ---
             vidas--;
@@ -202,7 +202,9 @@ void NivelBase::updateTimer()
 
         // Opcional: Cambiar los obstáculos que YA están en pantalla
         for (Obstaculo* obs : obstaculos) {
-            obs->setMovimientoSenoidal(true);
+            if (!obs->esSoloDecoracion()) {
+                obs->setMovimientoSenoidal(true);
+            }
         }
     }
     emit actualizarHUD(tiempoRestante, velocidadFondo * 20, vidas);

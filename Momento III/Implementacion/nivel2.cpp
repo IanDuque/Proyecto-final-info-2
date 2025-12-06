@@ -7,6 +7,7 @@
 #include <QGraphicsTextItem>
 #include <QFont>
 #include <QDebug>
+#include <QRandomGenerator>
 
 nivel2::nivel2(QObject *parent)
     : NivelBase(parent),
@@ -109,9 +110,16 @@ void nivel2::crearLaberinto()
     }
 
     // para generar los muros horizontales:
-    for (int x = 80; x <= 400; x += size) {
+    for (int x = 90; x <= 500; x += size) {
         Bloques *muro = new Bloques();
-        muro->setPos(x, 300);
+        muro->setPos(x, 200);
+        addItem(muro);
+        paredes.append(muro);
+    }
+
+    for (int x = 90; x <= 620; x += size) {
+        Bloques *muro = new Bloques();
+        muro->setPos(x, 430);
         addItem(muro);
         paredes.append(muro);
     }
@@ -119,7 +127,35 @@ void nivel2::crearLaberinto()
     //para generar los muros verticales:
     for (int y = 80; y <= 400; y += size) {
         Bloques *muro = new Bloques();
-        muro->setPos(200, y);
+        muro->setPos(490, y);
+        addItem(muro);
+        paredes.append(muro);
+    }
+
+    for (int y = 30; y <= 200; y += size) {
+        Bloques *muro = new Bloques();
+        muro->setPos(600, y);
+        addItem(muro);
+        paredes.append(muro);
+    }
+
+    for (int y = 80; y <= 300; y += size) {
+        Bloques *muro = new Bloques();
+        muro->setPos(160, y);
+        addItem(muro);
+        paredes.append(muro);
+    }
+
+    for (int y = 320; y <= 420; y += size) {
+        Bloques *muro = new Bloques();
+        muro->setPos(325, y);
+        addItem(muro);
+        paredes.append(muro);
+    }
+
+    for (int y = 20; y <= 100; y += size) {
+        Bloques *muro = new Bloques();
+        muro->setPos(345, y);
         addItem(muro);
         paredes.append(muro);
     }
@@ -128,24 +164,29 @@ void nivel2::crearLaberinto()
 // ---------------- COLECCIONABLES (recolectables) ----------------
 void nivel2::crearColeccionables()
 {
-    // Coordenadas ejemplo (luego las ajustas al laberinto real)
+    // Coordenadas de los recolectables (fijas)
     posicionesrecolectables.clear();
-    posicionesrecolectables << QPointF(120, 120)
-                      << QPointF(200, 200)
-                      << QPointF(600, 150)
-                      << QPointF(500, 400)
-                      << QPointF(150, 450)
-                      << QPointF(650, 350);
+    posicionesrecolectables
+        << QPointF(90, 90)
+        << QPointF(200, 500)
+        << QPointF(440, 150)
+        << QPointF(440, 370)
+        << QPointF(680, 500)
+        << QPointF(680, 60);
+
+    // Inicializamos la lista de posiciones disponibles
+    posicionesDisponibles = posicionesrecolectables;
 
     totalPorRecolectar = posicionesrecolectables.size();
     recolectados       = 0;
 
-    for (const QPointF &p : posicionesrecolectables) {
-        recolectables *b = new recolectables();
-        b->setPos(p);
-        addItem(b);
-        coleccionables.append(b);
-    }
+    // No creamos todos los recolectables aquí.
+    // Solo lanzamos el primero.
+    recolectableActual = nullptr;
+    spawnSiguienteRecolectable();
+
+    // También puedes actualizar el texto de recolectados:
+    actualizarTextoRecolectados();
 }
 
 // ---------------- RECOLECCIÓN ----------------
@@ -153,36 +194,42 @@ void nivel2::incrementarRecolectados(recolectables *bloque)
 {
     if (!bloque || juegoTerminado) return;
 
-    if (coleccionables.contains(bloque)) {
-        coleccionables.removeOne(bloque);
-    }
+    // Comprobamos que sea el recolectable actual
+    if (bloque == recolectableActual) {
+        // Lo sacamos de la escena y lo destruimos
+        removeItem(bloque);
+        delete bloque;
+        recolectableActual = nullptr;
 
-    removeItem(bloque);
-    delete bloque;
+        // Actualizamos contador
+        recolectados++;
+        actualizarTextoRecolectados();
 
-    recolectados++;
-    actualizarTextoRecolectados();
+        // ¿Ya recolectó todos?
+        if (recolectados >= totalPorRecolectar) {
 
-    //verificar si ya se tienen todos los bloques.
-    if (recolectados >= totalPorRecolectar) {
+            juegoTerminado = true;
 
-        juegoTerminado = true;
+            // Detener timers
+            if (timerLoop)   timerLoop->stop();
+            if (timerSpawn)  timerSpawn->stop();
+            if (timerSecond) timerSecond->stop();
 
-        // Detener timers
-        if (timerLoop)   timerLoop->stop();
-        if (timerSpawn)  timerSpawn->stop();
-        if (timerSecond) timerSecond->stop();
+            // Pantalla de victoria del nivel 2
+            QGraphicsTextItem *winText = new QGraphicsTextItem(
+                QString::fromUtf8("¡Conseguiste todos los bloques a tiempo!"));
+            winText->setFont(QFont("Arial", 26, QFont::Bold));
+            winText->setDefaultTextColor(Qt::green);
+            winText->setPos(70, 250);
+            winText->setZValue(20);
+            addItem(winText);
 
-        // Pantalla de victoria del nivel 2
-        QGraphicsTextItem *winText = new QGraphicsTextItem(QString::fromUtf8("¡Conseguiste todos los bloques a tiempo!"));
-        winText->setFont(QFont("Arial", 26, QFont::Bold));
-        winText->setDefaultTextColor(Qt::green);
-        winText->setPos(70, 250);
-        winText->setZValue(20);
-        addItem(winText);
-
-        //para regresar automaticamente al menu tras 3 segundos de acabar el nivel.
-        QTimer::singleShot(3000, this, [this](){ emit nivelTerminado(); });
+            // Regresar automáticamente al menú tras 3 segundos
+            QTimer::singleShot(3000, this, [this](){ emit nivelTerminado(); });
+        } else {
+            // Si aún faltan, lanzamos el siguiente recolectable
+            spawnSiguienteRecolectable();
+        }
     }
 }
 
@@ -245,4 +292,25 @@ void nivel2::updateTimer()
         //para regresar automaticamente al menu tras 3 segundos de acabar el nivel.
         QTimer::singleShot(3000, this, [this](){ emit nivelTerminado(); });
     }
+}
+
+void nivel2::spawnSiguienteRecolectable()
+{
+    if (juegoTerminado) return;
+
+    // Si ya no quedan posiciones, no hacemos nada
+    if (posicionesDisponibles.isEmpty()) {
+        return;
+    }
+
+    // Elegir una posición al azar de las que quedan
+    int idx = QRandomGenerator::global()->bounded(posicionesDisponibles.size());
+    QPointF destino = posicionesDisponibles[idx];
+
+    // Eliminar esa posición para que NO se repita
+    posicionesDisponibles.removeAt(idx);
+
+    // Crear nuevo recolectable con esa posición de destino
+    recolectableActual = new recolectables (destino);
+    addItem(recolectableActual);
 }

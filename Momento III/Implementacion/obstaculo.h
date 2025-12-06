@@ -17,6 +17,9 @@ public:
 
     void setMovimientoSenoidal(bool activar);
 
+    // 🔹 Nuevo: para saber si es solo decorativo (edificio fuera de la carretera)
+    bool esSoloDecoracion() const;
+
 private:
     int velocidadPropia;     // Velocidad extra individual de cada obstáculo
 
@@ -24,6 +27,8 @@ private:
     bool esSenoidal;
     int xOriginal;
 
+    // 🔹 Nuevo: bandera para edificios (no colisionan, no senoidal)
+    bool soloDecoracion;
 };
 
 #endif // OBSTACULO_H

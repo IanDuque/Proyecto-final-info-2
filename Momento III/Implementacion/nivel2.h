@@ -35,9 +35,12 @@ private:
     int recolectados;
 
     QVector<QPointF> posicionesrecolectables;  // coordenadas de los recoger (las irás afinando luego)
+    QVector<QPointF> posicionesDisponibles;
+    recolectables *recolectableActual = nullptr;
 
     void crearLaberinto();
     void crearColeccionables();
+    void spawnSiguienteRecolectable();
     void actualizarTextoRecolectados();
 };
 
