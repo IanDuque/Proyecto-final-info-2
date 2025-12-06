@@ -1,22 +1,27 @@
 #include "indio.h"
 #include "proyectil.h"
 #include "nivelbase.h"
+
 #include <QGraphicsScene>
 #include <QDebug>
+#include <QtMath>
 
 Indio::Indio(int vida_inicial, QObject *parent)
     : Personaje(vida_inicial, parent),
     controlEnabled(false),
+    lanzaEnAire(false),
     timerAnimacion(nullptr),
     frameActual(0),
-    arriba(false),
-    abajo(false),
     izquierda(false),
-    derecha(false)
+    derecha(false),
+    timerFisica(nullptr),
+    vy(0.0),
+    gravedad(0.8),
+    velocidadSalto(15.0),
+    ySuelo(430.0),
+    saltando(false),
+    enSuelo(true)
 {
-    //nos dice que no hay lanzas en pantalla ahora mismo.
-    lanzaEnAire = false;
-
     // ----- CARGAR SPRITE QUIETO (1 solo) -----
     spriteQuieto.load(":/Imagenes/indioquieto1.png");
     if (spriteQuieto.isNull()) {
@@ -41,18 +46,24 @@ Indio::Indio(int vida_inicial, QObject *parent)
     // Estado inicial: quieto
     setPixmap(spriteQuieto);
 
-    // Timer de animación (más lento: 150 ms)
+    // Timer de ANIMACIÓN (correr / quieto)
     timerAnimacion = new QTimer(this);
     connect(timerAnimacion, &QTimer::timeout, this, &Indio::actualizarAnimacion);
-    timerAnimacion->start(150);
+    timerAnimacion->start(150); // más lento
+
+    // Timer de FÍSICA (salto)
+    timerFisica = new QTimer(this);
+    connect(timerFisica, &QTimer::timeout, this, &Indio::actualizarFisica);
+    timerFisica->start(16); // ~60 FPS
 
     setFlag(QGraphicsItem::ItemIsFocusable);
 }
 
-// Animación: si se está moviendo, recorre framesCorrer, si no, muestra spriteQuieto
+// ------------------------ ANIMACIÓN ------------------------
 void Indio::actualizarAnimacion()
 {
-    bool enMovimiento = (arriba || abajo || izquierda || derecha);
+    // En movimiento si hay desplazamiento horizontal o está en el aire
+    bool enMovimiento = izquierda || derecha || !enSuelo;
 
     if (enMovimiento && !framesCorrer.isEmpty()) {
         frameActual = (frameActual + 1) % framesCorrer.size();
@@ -62,17 +73,19 @@ void Indio::actualizarAnimacion()
     }
 }
 
+// ------------------------ CONTROL ------------------------
 void Indio::setControlEnabled(bool enable)
 {
     controlEnabled = enable;
 
     if (!enable) {
-        arriba = abajo = izquierda = derecha = false;
+        izquierda = derecha = false;
         frameActual = 0;
         setPixmap(spriteQuieto);
     }
 }
 
+// ------------------------ DAÑO ------------------------
 void Indio::recibirDanio(int valor)
 {
     Personaje::recibirDanio(valor);
@@ -89,6 +102,7 @@ void Indio::recibirDanio(int valor)
     }
 }
 
+// ------------------------ DISPARAR LANZA ------------------------
 void Indio::disparar()
 {
     if (!scene() || !estaVivo()) return;
@@ -96,7 +110,7 @@ void Indio::disparar()
     if (lanzaEnAire) return;
     lanzaEnAire = true;
 
-    // Posicion del español
+    // Posición del español (fija)
     double objetivoX = 650;
     double objetivoY = 430;
 
@@ -120,7 +134,7 @@ void Indio::disparar()
     double anguloDeg = qRadiansToDegrees(rad);
 
     // Crea la lanza
-    Proyectil *lanza = new Proyectil(xIni,yIni,anguloDeg,velocidad,1);
+    Proyectil *lanza = new Proyectil(xIni, yIni, anguloDeg, velocidad, 1);
     scene()->addItem(lanza);
 }
 
@@ -129,37 +143,87 @@ void Indio::setLanzaLibre()
     lanzaEnAire = false;
 }
 
+// ------------------------ FÍSICA DEL SALTO ------------------------
+void Indio::actualizarFisica()
+{
+    if (!controlEnabled) return;
+
+    // Si está en el suelo y no está saltando, no hay nada que actualizar
+    if (enSuelo && !saltando) return;
+
+    // Actualizar velocidad y posición vertical
+    vy += gravedad;
+    double nuevaY = y() + vy;
+
+    if (nuevaY >= ySuelo) {
+        // Ha tocado el suelo
+        nuevaY = ySuelo;
+        vy = 0.0;
+        enSuelo = true;
+        saltando = false;
+    }
+
+    setY(nuevaY);
+}
+
+// ------------------------ TECLAS ------------------------
 void Indio::keyPressEvent(QKeyEvent *event)
 {
     if (!controlEnabled) return;
 
+    const qreal MIN_X = 50.0;   // límite izquierdo
+    const qreal MAX_X = 350.0;  // límite derecho (ajusta a tu gusto)
+
     if (event->key() == Qt::Key_W) {
-        setPos(x(), y() - 10);
-        arriba = true;
-    }
-    if (event->key() == Qt::Key_S) {
-        setPos(x(), y() + 10);
-        abajo = true;
-    }
-    if (event->key() == Qt::Key_A) {
-        setPos(x() - 10, y());
-        izquierda = true;
-    }
-    if (event->key() == Qt::Key_D) {
-        setPos(x() + 10, y());
-        derecha = true;
+        // solo salta si está en el suelo
+        if (enSuelo && !saltando) {
+            saltando = true;
+            enSuelo = false;
+            vy = -velocidadSalto;
+        }
     }
 
-    if (event->key() == Qt::Key_Space)
+    if (event->key() == Qt::Key_A) {
+        izquierda = true;
+        derecha   = false;
+        qreal nuevaX = x() - 10;
+        if (nuevaX < MIN_X) nuevaX = MIN_X;
+        setX(nuevaX);
+    }
+
+    if (event->key() == Qt::Key_D) {
+        derecha   = true;
+        izquierda = false;
+        qreal nuevaX = x() + 10;
+        if (nuevaX > MAX_X) nuevaX = MAX_X;
+        setX(nuevaX);
+    }
+
+    if (event->key() == Qt::Key_Space) {
         disparar();
+    }
 }
 
 void Indio::keyReleaseEvent(QKeyEvent *event)
 {
     if (!controlEnabled) return;
 
-    if (event->key() == Qt::Key_W) arriba = false;
-    if (event->key() == Qt::Key_S) abajo = false;
     if (event->key() == Qt::Key_A) izquierda = false;
-    if (event->key() == Qt::Key_D) derecha = false;
+    if (event->key() == Qt::Key_D) derecha   = false;
 }
+
+// ------------------------ DETENER TODO ------------------------
+void Indio::detenerAcciones()
+{
+    controlEnabled = false;
+    izquierda = derecha = false;
+    saltando = false;
+    enSuelo  = true;
+    vy = 0.0;
+
+    if (timerAnimacion) timerAnimacion->stop();
+    if (timerFisica)     timerFisica->stop();
+
+    setPixmap(spriteQuieto);
+}
+

@@ -22,26 +22,37 @@ public:
     void keyPressEvent(QKeyEvent *event) override;
     void keyReleaseEvent(QKeyEvent *event) override;
 
+    void detenerAcciones();
+
     void disparar();
     void setLanzaLibre();
 
+private slots:
+    void actualizarFisica();   // para el salto
+
 private:
+    // Control general
     bool controlEnabled;
     bool lanzaEnAire;
 
     // Animación
     QTimer *timerAnimacion;
-
     QPixmap spriteQuieto;
     QList<QPixmap> framesCorrer;
-
     int frameActual;
 
-    // Estado de teclas (movimiento)
-    bool arriba;
-    bool abajo;
+    // Estado de movimiento horizontal (para animación)
     bool izquierda;
     bool derecha;
+
+    // Física del salto
+    QTimer *timerFisica;
+    double vy;             // velocidad vertical
+    double gravedad;       // aceleración hacia abajo
+    double velocidadSalto; // impulso inicial del salto
+    double ySuelo;         // altura del suelo (coincide con la posición inicial en Y)
+    bool saltando;
+    bool enSuelo;
 };
 
 #endif // INDIO_H

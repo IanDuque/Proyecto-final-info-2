@@ -1,6 +1,6 @@
 #include "nivel1.h"
 #include "indio.h"
-#include"espaniol.h"
+#include "espaniol.h"
 
 nivel1::nivel1(QObject *parent)
     : NivelBase(parent)
@@ -8,26 +8,58 @@ nivel1::nivel1(QObject *parent)
     velocidadFondo = 0; // Nivel estático (sin scroll)
     configurarFondo();
 
-    // Como NivelBase tiene un puntero 'jugador', lo usamos
+    // Inicializar jugador (Indio)
     inicializarJugador();
 
     // Crear al enemigo (El español)
     Espaniol *enemigo = new Espaniol();
-    enemigo->setPos(650, 430); // A la derecha de la pantalla
+    enemigo->setPos(650, 440);        // A la derecha de la pantalla
     addItem(enemigo);
 
-    connect(enemigo, &Personaje::vidaCambiada,
+    espanol = enemigo;
+
+    // HUD: vida del español
+    connect(espanol, &Personaje::vidaCambiada,
             this, &NivelBase::actualizarVidaEspaniol);
+
+    // Creamos el sprite del español muerto, pero oculto
+    {
+        QPixmap espaniolderrotado(":/Imagenes/espaniolderrotado.png");
+        if (espaniolderrotado.isNull()) {
+            espaniolderrotado = QPixmap(120, 120);
+            espaniolderrotado.fill(Qt::red);
+        }
+        espaniolderrotado = espaniolderrotado.scaled(120, 120, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+
+        spriteEspaniolMuerto = new QGraphicsPixmapItem(espaniolderrotado);
+        spriteEspaniolMuerto->setVisible(false);
+        spriteEspaniolMuerto->setZValue(1);
+
+        // En esta posicion se va a mostrar el sprite del espanñol al ser derrotado
+        spriteEspaniolMuerto->setPos(650, 500);
+        addItem(spriteEspaniolMuerto);
+    }
 
     // Detenemos spawn de obstáculos del nivel anterior porque este es de pelea 1v1
     if (timerSpawn) timerSpawn->stop();
-    if (timerLoop) timerLoop->stop(); // No necesitamos loop de scroll
+    if (timerLoop)  timerLoop->stop(); // No necesitamos loop de scroll
+
+    // Conexión al morir (Indio)
+    if (indio) {
+        connect(indio, &Personaje::murio, this, &nivel1::onPersonajeMuerto);
+    }
+
+    // Conexión al morir (Español)
+    if (espanol) {
+        connect(espanol, &Personaje::murio, this, &nivel1::onPersonajeMuerto);
+    }
 }
 
 void nivel1::inicializarJugador()
 {
     Indio *player = new Indio();
 
+    indio   = player;
     jugador = player;
 
     connect(player, &Indio::vidaCambiada, this, [this](int nuevaVida){
@@ -42,8 +74,7 @@ void nivel1::inicializarJugador()
 
     addItem(jugador);
     jugador->setFocus();
-    connect(player, &Personaje::vidaCambiada,
-            this, &NivelBase::actualizarVidaIndio);
+    connect(player, &Personaje::vidaCambiada, this, &NivelBase::actualizarVidaIndio);
 }
 
 QString nivel1::getFondoPath() const
@@ -122,4 +153,45 @@ void nivel1::onEnemigoMuere()
     mensajeextra->setPos(100, 320);
     mensajeextra->setZValue(20);
     addItem(mensajeextra);
+}
+
+void nivel1::onPersonajeMuerto(Personaje *p)
+{
+    if (batallaTerminada) return; // por si llega doble
+    batallaTerminada = true;
+
+    // Detener cualquier timer global por si acaso
+    if (timerLoop)   timerLoop->stop();
+    if (timerSpawn)  timerSpawn->stop();
+    if (timerSecond) timerSecond->stop();
+
+    // Detener acciones propias de cada personaje
+    if (indio)   indio->detenerAcciones();
+    if (espanol) espanol->detenerAcciones();
+
+    // --- Si el que murió es el Indio ---
+    if (auto jugador = qobject_cast<Indio*>(p)) {
+        QPixmap indiomuerto(":/Imagenes/indioderrotado.png");
+        if (!indiomuerto.isNull()) {
+            jugador->setPixmap(
+                indiomuerto.scaled(100, 100, Qt::KeepAspectRatio, Qt::SmoothTransformation)
+                );
+        }
+
+        onJugadorMuere();
+    }
+    // --- Si el que murió es el Español ---
+    else if (qobject_cast<Espaniol*>(p)) {
+
+        // Ocultar el sprite normal del español
+        if (espanol)
+            espanol->setVisible(false);
+
+        // Mostrar el sprite ya preparado del español muerto
+        if (spriteEspaniolMuerto)
+            spriteEspaniolMuerto->setVisible(true);
+
+        // Mostrar mensaje de victoria
+        onEnemigoMuere();
+    }
 }

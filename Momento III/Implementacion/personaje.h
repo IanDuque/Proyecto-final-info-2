@@ -19,6 +19,7 @@ protected:
     int vidaMax;
 signals:
     void vidaCambiada(int nuevaVida);
+    void murio(Personaje *quien);
 };
 
 #endif // PERSONAJE_H

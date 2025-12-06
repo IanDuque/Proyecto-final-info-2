@@ -16,7 +16,8 @@ Espaniol::Espaniol(QObject *parent)
     usandoCanon(false),
     reduccionDanio(0),
     canon(nullptr),
-    disparandoCanon(false)
+    disparandoCanon(false),
+    muerto(false)
 {
     // ----- SPRITE QUIETO SOLDADO -----
     spriteQuieto.load(":/Imagenes/soldadoquieto1.png");
@@ -27,6 +28,14 @@ Espaniol::Espaniol(QObject *parent)
     }
     spriteQuieto = spriteQuieto.scaled(100, 100, Qt::KeepAspectRatio, Qt::SmoothTransformation);
     setPixmap(spriteQuieto);
+
+    spriteDerrotado.load(":/Imagenes/espaniolderrotado.png");
+    if (spriteDerrotado.isNull()) {
+        qDebug() << "Error cargando :/Imagenes/espaniolderrotado.png";
+        spriteDerrotado = QPixmap(100, 100);
+        spriteDerrotado.fill(Qt::magenta);
+    }
+    spriteDerrotado = spriteDerrotado.scaled(100, 100, Qt::KeepAspectRatio, Qt::SmoothTransformation);
 
     // ----- FRAMES DISPARAR (SOLO FASE 1) -----
     for (int i = 1; i <= 6; ++i) {
@@ -79,6 +88,7 @@ Espaniol::Espaniol(QObject *parent)
 // --------------------------------------------------
 void Espaniol::actualizarAnimacion()
 {
+    if (muerto) return;
     if (!usandoCanon) {
         // FASE 1: usa animación de disparo del soldado
         if (atacando && !framesDisparar.isEmpty()) {
@@ -180,6 +190,8 @@ void Espaniol::finalizarDisparo()
 // --------------------------------------------------
 void Espaniol::recibirDanio(int danio)
 {
+    if (muerto) return;  // ya está muerto, no seguir procesando
+
     int danoFinal = danio;
 
     // Si ya está en fase 2, reducimos el daño recibido
@@ -192,9 +204,9 @@ void Espaniol::recibirDanio(int danio)
     qDebug() << "Español recibió daño. Vida actual:" << vida;
 
     // Cambio a fase 2 cuando llegue a 120 o menos
-    if (!usandoCanon && vida <= 120) {
+    if (!usandoCanon && vida <= 120 && vida > 0) {
         usandoCanon = true;
-        reduccionDanio = 10; //hace que el enemigo reciba menos daño por cada golpe
+        reduccionDanio = 10;
         qDebug() << "Español cambia a fase 2. Reducción de daño =" << reduccionDanio;
 
         if (canon) {
@@ -206,12 +218,35 @@ void Espaniol::recibirDanio(int danio)
         frameActual = 0;
     }
 
-    if (!estaVivo()) {
+    // --- MUERTE ---
+    if (!estaVivo() && !muerto) {
+        muerto = true;
         qDebug() << "El Español ha muerto";
 
+        // Detener timers propios
+        if (timerAtaque)   timerAtaque->stop();
+        if (timerAnimacion) timerAnimacion->stop();
+
+        // Ocultar cañón
+        if (canon) canon->setVisible(false);
+
+        // Poner sprite derrotado
+        setPixmap(spriteDerrotado);
+
+        // Avisar al nivel para que detenga todo lo demás
         NivelBase *nivel = dynamic_cast<NivelBase*>(scene());
         if (nivel) {
             nivel->onEnemigoMuere();
         }
+    }
+}
+
+void Espaniol::detenerAcciones()
+{
+    if (timerAtaque) {
+        timerAtaque->stop();
+    }
+    if (timerAnimacion) {
+        timerAnimacion->stop();
     }
 }

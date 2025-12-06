@@ -14,6 +14,8 @@ public:
     explicit Espaniol(QObject *parent = nullptr);
 
     void recibirDanio(int danio);
+    void detenerAcciones();
+    void morir();
 
 private slots:
     void disparar();
@@ -33,11 +35,19 @@ private:
     bool usandoCanon;
     int reduccionDanio;
 
+    QPixmap spriteDerrotado;
+    bool muerto;
+
+
     // Cańón
     QGraphicsPixmapItem *canon;
     QPixmap spriteCanonApuntando;
     QPixmap spriteCanonDisparando;
     bool disparandoCanon;
+
+signals:
+    void enemigoderrotado();
+
 };
 
 #endif // ESPANIOL_H
