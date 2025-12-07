@@ -25,7 +25,8 @@ SOURCES += \
     obstaculo.cpp \
     personaje.cpp \
     proyectil.cpp \
-    recolectables.cpp
+    recolectables.cpp \
+    soundmanager.cpp
 
 HEADERS += \
     bloques.h \
@@ -43,7 +44,8 @@ HEADERS += \
     obstaculo.h \
     personaje.h \
     proyectil.h \
-    recolectables.h
+    recolectables.h \
+    soundmanager.h
 
 FORMS += \
     mainwindow.ui

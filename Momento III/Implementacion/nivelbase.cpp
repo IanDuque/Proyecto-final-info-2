@@ -2,6 +2,7 @@
 #include <QDebug>
 #include <QFont>
 #include "carro.h" // Incluir aquí para la colisión
+#include "soundmanager.h"
 
 NivelBase::NivelBase(QObject *parent)
     : QGraphicsScene(parent), jugador(nullptr),    fondo1(nullptr),
@@ -105,6 +106,9 @@ void NivelBase::gameLoop()
         // 2. Detectar Colisión con el Jugador
         // Usamos collidesWithItem para una detección precisa
         if (!obs->esSoloDecoracion() && jugador->collidesWithItem(obs)) {
+
+            //reproduce el sonido de choque
+            SoundManager::instance().playCarCrash();
 
             // --- LÓGICA DE VIDAS ---
             vidas--;

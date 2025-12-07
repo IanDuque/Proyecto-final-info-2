@@ -19,7 +19,7 @@ Egipcio::Egipcio(nivel2 *nivel, QObject *parent)
     teclaAbajo(false),
     teclaIzquierda(false),
     teclaDerecha(false),
-    velocidad(4)
+    velocidad(2)
 {
     // ----- SPRITE QUIETO (FRENTE) -----
     spriteQuietoFrente.load(":/Imagenes/egipcioquietofrente.png");

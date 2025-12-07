@@ -2,6 +2,7 @@
 #include "proyectil.h"
 #include "nivelbase.h"
 #include "indio.h"
+#include "soundmanager.h"
 
 #include <QGraphicsScene>
 #include <QDebug>
@@ -118,7 +119,8 @@ void Espaniol::disparar()
     if (!usandoCanon) {
         // --------- FASE 1 ---------
         atacando = true;
-
+        //reproduce el sonido del disparo
+        SoundManager::instance().playPistolShot();
         Proyectil *bala = new Proyectil(x(), y() + offsetY,180,12,3);
         scene()->addItem(bala);
 
@@ -162,6 +164,8 @@ void Espaniol::disparar()
             canon->setPixmap(spriteCanonDisparando);
         }
 
+        // reproduce el sonido de disparo de cañon
+        SoundManager::instance().playCanonShot();
         Proyectil *balaCanon = new Proyectil(xIni,yIni,anguloDeg,velocidad,2);
         scene()->addItem(balaCanon);
 

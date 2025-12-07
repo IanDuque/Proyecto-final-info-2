@@ -279,6 +279,7 @@ void MainWindow::iniciarMusicaNivel(int nivel)
         break;
     case 3:
         musicPlayer->setSource(QUrl("qrc:/audios/audionivel3.wav"));
+        audioOutput-> setVolume(0.8); // volumen al 80% para nivel 3
         break;
     default:
         // menú u otra cosa: sin música o una general si quieres

@@ -2,6 +2,7 @@
 #include "egipcio.h"
 #include "bloques.h"
 #include "recolectables.h"
+#include "soundmanager.h"
 
 #include <QGraphicsPixmapItem>
 #include <QGraphicsTextItem>
@@ -196,6 +197,8 @@ void nivel2::incrementarRecolectados(recolectables *bloque)
 
     // Comprobamos que sea el recolectable actual
     if (bloque == recolectableActual) {
+        //reproduce el sonido de recoleccion del bloque
+        SoundManager::instance().playCollect();
         // Lo sacamos de la escena y lo destruimos
         removeItem(bloque);
         delete bloque;
