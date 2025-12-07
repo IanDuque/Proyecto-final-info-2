@@ -11,7 +11,7 @@ NivelBase::NivelBase(QObject *parent)
     setSceneRect(0, 0, 800, 600);
 
     velocidadFondo = 5;
-    tiempoRestante = 15; //el tiempo que usaremos sera 120 pero a efectos de prueba sera 15.
+    tiempoRestante = 120; //el tiempo que usaremos sera 120 pero a efectos de prueba sera 15.
     juegoTerminado = false;
 
     vidas = 5; // COMENZAMOS CON 5 VIDAS

@@ -15,9 +15,18 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
     ui(new Ui::MainWindow),
     nivelActual(nullptr),
-    menuWidget(nullptr)
+    numNivelActual(0),
+    menuWidget(nullptr),
+    musicPlayer(nullptr),
+    audioOutput(nullptr)
 {
     ui->setupUi(this);
+
+    musicPlayer = new QMediaPlayer(this);
+    audioOutput = new QAudioOutput(this);
+
+    musicPlayer->setAudioOutput(audioOutput);
+    audioOutput->setVolume(0.4); // volumen 40%
 
     this->setFixedSize(820, 660);
 
@@ -102,6 +111,8 @@ void MainWindow::limpiarNivelActual()
 void MainWindow::mostrarMenu()
 {
     limpiarNivelActual();
+    if (musicPlayer)
+        musicPlayer->stop();
 
     ui->graphicsView->setScene(nullptr);
 
@@ -152,6 +163,9 @@ void MainWindow::iniciarNivel(int nivel)
 
     ui->graphicsView->setScene(nivelActual);
     ui->graphicsView->fitInView(0, 0, 800, 600, Qt::KeepAspectRatio);
+
+    // Inicia la cancion correspondiente
+    iniciarMusicaNivel(nivel);
 
     // Añadir HUD a la escena
     nivelActual->addItem(textoTiempo);
@@ -231,6 +245,54 @@ void MainWindow::actualizarHUD(int tiempo, int velocidad, int vidas)
 
 void MainWindow::cambiarANivelSiguiente()
 {
+    detenerMusica();
     limpiarNivelActual();
     mostrarMenu();
+}
+
+// ==========================================================
+//        REPRODUCE CANCION SEGUN EL NIVEL QUE ESTE ACTIVO
+// ==========================================================
+
+void MainWindow::iniciarMusicaNivel(int nivel)
+{
+    // Si ya había algo sonando, lo paramos
+    detenerMusica();
+
+    // Creamos los objetos si aún no existen
+    if (!musicPlayer) {
+        musicPlayer = new QMediaPlayer(this);
+    }
+    if (!audioOutput) {
+        audioOutput = new QAudioOutput(this);
+        musicPlayer->setAudioOutput(audioOutput);
+        audioOutput->setVolume(0.5); // 50%
+    }
+
+    // Elegir la pista según el nivel
+    switch (nivel) {
+    case 1:
+        musicPlayer->setSource(QUrl("qrc:/audios/audionivel1.wav"));
+        break;
+    case 2:
+        musicPlayer->setSource(QUrl("qrc:/audios/audionivel2.wav"));
+        break;
+    case 3:
+        musicPlayer->setSource(QUrl("qrc:/audios/audionivel3.wav"));
+        break;
+    default:
+        // menú u otra cosa: sin música o una general si quieres
+        musicPlayer->setSource(QUrl());
+        return;
+    }
+
+    musicPlayer->setLoops(QMediaPlayer::Infinite);
+    musicPlayer->play();
+}
+
+void MainWindow::detenerMusica()
+{
+    if (musicPlayer) {
+        musicPlayer->stop();
+    }
 }

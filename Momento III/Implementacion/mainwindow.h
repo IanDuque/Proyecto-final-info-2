@@ -7,6 +7,8 @@
 #include <QTimer>
 #include "nivelbase.h"
 #include "menu.h" // Incluir el nuevo widget de menú
+#include <QMediaPlayer>
+#include <QAudioOutput>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -36,6 +38,12 @@ private:
     QGraphicsTextItem *textoVidas;
     QGraphicsTextItem *textoVidaIndio;
     QGraphicsTextItem *textoVidaEspaniol;
+
+    // ----- AUDIO -----
+    QMediaPlayer *musicPlayer;
+    QAudioOutput *audioOutput;
+    void iniciarMusicaNivel(int nivel);
+    void detenerMusica();
 
     MenuWidget *menuWidget; // Variable para el widget del menú
 

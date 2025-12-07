@@ -47,5 +47,12 @@
         <file>Imagenes/egipciocaminaizquierda1.png</file>
         <file>Imagenes/egipciocaminaizquierda2.png</file>
         <file>Imagenes/egipcioquietofrente.png</file>
+        <file>audios/audionivel1.wav</file>
+        <file>audios/audionivel2.wav</file>
+        <file>audios/audionivel3.wav</file>
+        <file>audios/choquecarro.wav</file>
+        <file>audios/disparocanon.wav</file>
+        <file>audios/disparopistola.wav</file>
+        <file>audios/recoleccion.wav</file>
     </qresource>
 </RCC>

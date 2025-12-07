@@ -18,7 +18,6 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     menu.cpp \
-    movimientos.cpp \
     nivel1.cpp \
     nivel2.cpp \
     nivel3.cpp \
@@ -37,7 +36,6 @@ HEADERS += \
     indio.h \
     mainwindow.h \
     menu.h \
-    movimientos.h \
     nivel1.h \
     nivel2.h \
     nivel3.h \

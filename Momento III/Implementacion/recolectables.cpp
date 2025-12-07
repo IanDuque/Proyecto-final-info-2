@@ -1,57 +1,49 @@
 #include "recolectables.h"
-#include <QGraphicsScene>
+#include <QPixmap>
 #include <QDebug>
 
-recolectables::recolectables(QObject *parent)
+recolectables::recolectables(const QPointF &destino, QObject *parent)
     : QObject(parent),
     QGraphicsPixmapItem(),
-    velocidadY(0.0),
-    aceleracionY(0.4)      // ajusta para que caiga más rápido/lento
+    m_destino(destino),
+    m_velocidadY(0.0),
+    m_aceleracion(0.35),
+    m_timer(new QTimer(this))
 {
     // Cargar sprite
-    QPixmap px(":/Imagenes/bloque2.png");   // o el nombre que estés usando
-    if (px.isNull()) {
-        qDebug() << "Error cargando :/Imagenes/bloque2.png";
-        px = QPixmap(40, 40);
-        px.fill(Qt::yellow);
+    QPixmap img(":/Imagenes/bloque2.png"); // cambia al nombre real
+    if (img.isNull()) {
+        qDebug() << "Error cargando :/Imagenes/bloque.png";
+        img = QPixmap(40, 40);
+        img.fill(Qt::yellow);
     }
-    setPixmap(px.scaled(40, 40, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    setPixmap(img.scaled(40, 40, Qt::KeepAspectRatio, Qt::SmoothTransformation));
 
-    // Configurar timer interno
-    connect(&timerMovimiento, &QTimer::timeout,
-            this, &recolectables::actualizarMovimiento);
-    timerMovimiento.start(16);
+    // Posición inicial: misma X del destino, pero arriba de la pantalla
+    setPos(m_destino.x(), -50);
+
+    // Conectar timer de caída
+    connect(m_timer, &QTimer::timeout, this, &recolectables::actualizarMovimiento);
+    m_timer->start(16); // ~60 FPS
 }
 
-void recolectables::resetear(const QPointF &posicionInicial)
+void recolectables::setDestino(const QPointF &destino)
 {
-    setPos(posicionInicial);
-    velocidadY = 0.0;
-}
-
-void recolectables::iniciarCaida()
-{
-    if (!timerMovimiento.isActive())
-        timerMovimiento.start(16);
-}
-
-void recolectables::detenerCaida()
-{
-    timerMovimiento.stop();
+    m_destino = destino;
 }
 
 void recolectables::actualizarMovimiento()
 {
-    // Caída uniformemente acelerada
-    velocidadY += aceleracionY;
-    setY(y() + velocidadY);
+    // Movimiento vertical uniformemente acelerado
+    m_velocidadY += m_aceleracion;
+    qreal nuevaY = y() + m_velocidadY;
 
-    if (!scene())
+    // Si ya alcanzó o pasó la altura del destino, lo fijamos allí
+    if (nuevaY >= m_destino.y()) {
+        setPos(m_destino.x(), m_destino.y());
+        m_timer->stop(); // ya no sigue cayendo
         return;
-
-    // Si se sale por abajo, avisar y/o parar
-    if (y() > scene()->height()) {
-        emit salioDePantalla(this);
-        detenerCaida();
     }
+
+    setPos(m_destino.x(), nuevaY);
 }
